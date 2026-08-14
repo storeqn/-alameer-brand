@@ -208,6 +208,71 @@ function normalizeProduct(r, idx){
 /* =========================
    تحميل المنتجات
 ========================= */
+/* ===================================
+   أوضاع عرض الموقع
+=================================== */
+
+function storeView(mode){
+
+  const hero =
+    document.querySelector('.hero');
+
+  const toolbar =
+    document.querySelector('.toolbar');
+
+  const offers =
+    document.querySelector('#offers');
+
+  const categories =
+    document.querySelector('#categories');
+
+  const products =
+    document.querySelector('#products');
+
+
+  if(mode==='home'){
+
+    if(hero) hero.hidden=false;
+    if(toolbar) toolbar.hidden=false;
+    if(offers) offers.hidden=false;
+    if(categories) categories.hidden=false;
+    if(products) products.hidden=false;
+
+  }
+
+
+  if(mode==='categories'){
+
+    if(hero) hero.hidden=true;
+    if(toolbar) toolbar.hidden=true;
+    if(offers) offers.hidden=true;
+
+    if(categories)
+      categories.hidden=false;
+
+    if(products)
+      products.hidden=true;
+
+  }
+
+
+  if(mode==='products'){
+
+    if(hero) hero.hidden=true;
+    if(offers) offers.hidden=true;
+
+    if(toolbar)
+      toolbar.hidden=false;
+
+    if(categories)
+      categories.hidden=true;
+
+    if(products)
+      products.hidden=false;
+
+  }
+
+}
 
 async function loadProducts(){
 
@@ -939,32 +1004,41 @@ function add(id,n=1){
 
   const x =
     state.cart.find(
-      i=>
-        String(i.id)===
-        String(id)
+      i=>String(i.id)===String(id)
     );
 
   if(x){
-
     x.qty+=n;
-
   }
 
   else{
-
     state.cart.push({
       id,
       qty:n
     });
-
   }
 
   saveCart();
 
-  toast(
-    'تمت الإضافة إلى السلة'
-  );
+  const qty =
+    cartQty(id);
 
+  const detailQty =
+    $('#detailQty');
+
+  if(
+    detailQty &&
+    String(state.openProductId) === String(id)
+  ){
+
+    detailQty.innerHTML =
+      qtyControl(id,qty);
+
+  }
+
+  toast(
+    `تمت الإضافة للسلة • العدد الآن ${qty}`
+  );
 }
 
 
@@ -1037,6 +1111,25 @@ function renderCart(){
   const items=
     cartData();
 
+  let clearTools = $('#cartClearTools');
+
+if(!clearTools){
+
+  $('#cartItems').insertAdjacentHTML(
+    'beforebegin',
+    `
+    <div class="cart-tools" id="cartClearTools">
+      <button
+        type="button"
+        class="clear-cart-btn"
+        data-clear-cart>
+        حذف السلة بالكامل
+      </button>
+    </div>
+    `
+  );
+
+}
 
   $('#cartItems').innerHTML =
 
@@ -1129,6 +1222,8 @@ function openProduct(id){
   const p =
     byId(id);
 
+  state.openProductId=id;
+  
   if(!p)
     return;
 
@@ -1314,19 +1409,14 @@ function checkout(e){
 
   e.preventDefault();
 
-
   const items =
     cartData();
 
-
   if(!items.length){
 
-    toast(
-      'أضف منتجات إلى السلة أولًا'
-    );
+    toast('السلة فارغة');
 
     return;
-
   }
 
 
@@ -1336,74 +1426,110 @@ function checkout(e){
     );
 
 
-  const total =
+  const beforeDiscount =
     items.reduce(
-      (s,x)=>
-        s+
-        x.p.price*
-        x.qty,
+      (sum,x)=>{
+
+        const unit =
+          x.p.old_price > x.p.price
+          ? x.p.old_price
+          : x.p.price;
+
+        return sum +
+          unit*x.qty;
+
+      },
       0
     );
 
 
-  const lines =
+  const afterDiscount =
+    items.reduce(
+      (sum,x)=>
+        sum+
+        (x.p.price*x.qty),
+      0
+    );
+
+
+  const saving =
+    Math.max(
+      0,
+      beforeDiscount-afterDiscount
+    );
+
+
+  const number =
+    n=>
+      Number(n||0)
+      .toLocaleString('en-US');
+
+
+  const productsText =
     items.map(
       (x,i)=>{
 
-        let line=
-          `${i+1}) ${x.p.name}\n`;
-
-        line+=
-          `العدد: ${x.qty}\n`;
-
-        if(x.p.price>0){
-
-          line+=
-            `السعر: ${money(x.p.price)}\n`;
-
-          line+=
-            `المجموع: ${money(
-              x.p.price*x.qty
-            )}`;
-
-        }
-
-        return line;
+        return (
+          `${i+1}) ${x.p.name}` +
+          ` | عدد: ${x.qty}` +
+          ` | سعر: ${number(x.p.price)}` +
+          ` | مجموع: ${number(x.p.price*x.qty)}`
+        );
 
       }
     )
-    .join('\n\n');
+    .join('\n');
 
 
-  const msg=
+  const name =
+    fd.get('name') || '';
 
-`السلام عليكم، أريد تأكيد هذا الطلب من موقع ${C.storeName}:
+  const phone =
+    fd.get('phone') || '';
 
-${lines}
+  const address =
+    fd.get('address') || '';
 
-إجمالي الطلب: ${money(total)}
+  const landmark =
+    fd.get('landmark') || '';
 
-عدد القطع:
-${items.reduce((s,x)=>s+x.qty,0)}
+  const notes =
+    fd.get('notes') || '';
 
-بيانات الزبون:
 
-الاسم:
-${fd.get('name')}
+  let fullAddress =
+    address;
 
-رقم الهاتف:
-${fd.get('phone')}
+  if(landmark){
 
-العنوان:
-${fd.get('address')}
+    fullAddress +=
+      ` - أقرب نقطة دالة: ${landmark}`;
 
-أقرب نقطة دالة:
-${fd.get('landmark')}
+  }
 
-ملاحظات:
-${fd.get('notes')||'لا يوجد'}
 
-يرجى تأكيد الطلب.`;
+  let msg =
+
+`طلب جديد - كوزمتك الأمير براند AB
+
+الاسم: ${name}
+الهاتف: ${phone}
+العنوان: ${fullAddress}
+
+المنتجات:
+${productsText}
+
+الإجمالي قبل الخصم: ${number(beforeDiscount)}
+الإجمالي بعد الخصم: ${number(afterDiscount)}
+التوفير: ${number(saving)}`;
+
+
+  if(notes){
+
+    msg +=
+      `\n\nملاحظات: ${notes}`;
+
+  }
 
 
   window.open(
@@ -1413,8 +1539,6 @@ ${fd.get('notes')||'لا يوجد'}
   );
 
 }
-
-
 /* =========================
    رسالة صغيرة
 ========================= */
@@ -1546,7 +1670,32 @@ document.addEventListener(
   'click',
   e=>{
 
+const categoriesNav =
+  e.target.closest(
+    'a[href="#categories"], [data-go-categories]'
+  );
 
+if(categoriesNav){
+
+  e.preventDefault();
+
+  state.category='الكل';
+  state.brand='الكل';
+  state.offersOnly=false;
+
+  renderCategories();
+
+  storeView('categories');
+
+  document.querySelector('#categories')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+    
     const addBtn=
       e.target.closest(
         '[data-add]'
@@ -1633,6 +1782,25 @@ document.addEventListener(
 
     }
 
+    const clearCart =
+  e.target.closest('[data-clear-cart]');
+
+if(clearCart){
+
+  if(state.cart.length){
+
+    state.cart=[];
+
+    saveCart();
+
+    renderCart();
+
+    toast('تم حذف جميع منتجات السلة');
+
+  }
+
+  return;
+}
 
     /* اختيار قسم */
 
@@ -1656,6 +1824,8 @@ document.addEventListener(
 
       renderProducts();
 
+      storeView('products');
+      
       document
       .querySelector('#products')
       ?.scrollIntoView({
