@@ -1,0 +1,3 @@
+id,name,price,old_price,offer,discount_note,image,images,category,desc,sub_category,brand,active
+1,عطر تجريبي,55000,90000,نعم,خصم خاص,https://example.com/main.jpg,https://example.com/2.jpg | https://example.com/3.jpg,العطور,"وصف المنتج كامل بدون قص. يمكن أن يحتوي على عدة أسطر ومعلومات طويلة.",عطور رجالية,AB,1
+2,منتج عناية,25000,0,لا,,https://example.com/product.jpg,,العناية,"تفاصيل المنتج وطريقة الاستخدام والمكونات إن رغبت.",العناية بالبشرة,AB,1

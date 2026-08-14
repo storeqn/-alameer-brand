@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#11100e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="الأمير براند" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="الأمير براند - عطور، مكياج، عناية وعروض. اطلب مباشرة عبر واتساب." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <link rel="icon" href="assets/icon-192.png" />
+  <link rel="preconnect" href="https://docs.google.com" />
+  <title>الأمير براند</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="offlineBar" class="offline-bar" hidden>أنت غير متصل بالإنترنت — ستظهر البيانات المحفوظة إن وُجدت.</div>
+
+  <header class="topbar">
+    <div class="topbar-inner container">
+      <button class="icon-button" id="menuBtn" aria-label="القائمة">☰</button>
+      <a class="brand" href="#home" aria-label="الأمير براند">
+        <img src="assets/logo.png" alt="شعار الأمير براند" class="brand-logo" />
+        <span class="brand-text">الأمير براند</span>
+      </a>
+      <button class="cart-button" id="cartBtn" aria-label="السلة">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-badge" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-panel">
+      <div class="drawer-head">
+        <strong>الأمير براند</strong>
+        <button class="icon-button" id="closeMenuBtn" aria-label="إغلاق">✕</button>
+      </div>
+      <nav class="drawer-nav">
+        <a href="#home">الرئيسية</a>
+        <a href="#offers">العروض</a>
+        <a href="#categories">الأقسام</a>
+        <a href="#products">المنتجات</a>
+        <a href="#footer">تواصل معنا</a>
+      </nav>
+    </div>
+    <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة"></button>
+  </aside>
+
+  <main id="home">
+    <section class="hero container">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <span class="eyebrow">COSMETICS • PERFUMES • SKIN CARE</span>
+          <h1>الأمير براند</h1>
+          <p>اختيارات مميزة من العطور، المكياج والعناية. تصفح المنتجات وأرسل طلبك مباشرة إلى واتساب.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#products">تسوق الآن</a>
+            <a class="btn btn-ghost" href="#offers">شاهد العروض</a>
+          </div>
+        </div>
+        <div class="hero-mark" aria-hidden="true">AB</div>
+      </div>
+    </section>
+
+    <section class="toolbar container" aria-label="البحث والتصفية">
+      <label class="searchbox">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="ابحث عن منتج، ماركة أو قسم..." autocomplete="off" />
+      </label>
+      <button class="filter-button" id="showAllBtn">كل المنتجات</button>
+    </section>
+
+    <section class="section container" id="offers">
+      <div class="section-head">
+        <div>
+          <span class="section-kicker">SPECIAL OFFERS</span>
+          <h2>العروض</h2>
+        </div>
+        <button class="text-button" data-filter-offers="true">عرض الكل</button>
+      </div>
+      <div class="product-grid" id="offersGrid"></div>
+      <div class="empty-card" id="offersEmpty" hidden>لا توجد عروض حاليًا.</div>
+    </section>
+
+    <section class="section container" id="categories">
+      <div class="section-head">
+        <div>
+          <span class="section-kicker">CATEGORIES</span>
+          <h2>الأقسام</h2>
+        </div>
+      </div>
+      <div class="category-grid" id="categoryGrid"></div>
+    </section>
+
+    <section class="section container" id="products">
+      <div class="section-head">
+        <div>
+          <span class="section-kicker">OUR PRODUCTS</span>
+          <h2 id="productsTitle">كل المنتجات</h2>
+        </div>
+        <span class="count-label" id="productsCount"></span>
+      </div>
+      <div class="subfilters" id="subfilters" hidden></div>
+      <div class="product-grid" id="productsGrid"></div>
+      <div class="empty-card" id="productsEmpty" hidden>لا توجد منتجات مطابقة.</div>
+      <div class="loading-card" id="loadingCard">جاري تحميل المنتجات...</div>
+    </section>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="container footer-grid">
+      <div>
+        <img src="assets/logo.png" alt="الأمير براند" class="footer-logo" />
+        <p>الطلب والتأكيد مباشرة عبر واتساب.</p>
+      </div>
+      <div>
+        <strong>رقم الطلب</strong>
+        <a href="https://wa.me/9647733949777" target="_blank" rel="noopener">0773 394 9777</a>
+      </div>
+      <div>
+        <strong>التصفح</strong>
+        <a href="#offers">العروض</a>
+        <a href="#categories">الأقسام</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span id="year"></span> الأمير براند</div>
+  </footer>
+
+  <nav class="bottom-nav" aria-label="التنقل السريع">
+    <a href="#home"><span>⌂</span><small>الرئيسية</small></a>
+    <a href="#categories"><span>▦</span><small>الأقسام</small></a>
+    <a href="#offers"><span>★</span><small>العروض</small></a>
+    <button id="bottomCartBtn"><span>🛒</span><small>السلة</small><b id="bottomCartCount">0</b></button>
+  </nav>
+
+  <dialog class="modal product-modal" id="productModal">
+    <button class="modal-close" data-close-modal="productModal" aria-label="إغلاق">✕</button>
+    <div id="productModalContent"></div>
+  </dialog>
+
+  <dialog class="modal cart-modal" id="cartModal">
+    <div class="modal-header">
+      <div>
+        <span class="section-kicker">YOUR CART</span>
+        <h2>سلة الطلب</h2>
+      </div>
+      <button class="modal-close static" data-close-modal="cartModal" aria-label="إغلاق">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary">
+      <div><span>عدد القطع</span><strong id="cartPieces">0</strong></div>
+      <div><span>المجموع</span><strong id="cartTotal">0 د.ع</strong></div>
+    </div>
+    <form class="checkout-form" id="checkoutForm">
+      <h3>معلومات الطلب</h3>
+      <label>الاسم الكامل<input name="name" required autocomplete="name" placeholder="مثال: أحمد علي" /></label>
+      <label>رقم الهاتف<input name="phone" required inputmode="tel" autocomplete="tel" placeholder="07xxxxxxxxx" /></label>
+      <label>العنوان<textarea name="address" required rows="2" placeholder="المحافظة / القضاء / المنطقة"></textarea></label>
+      <label>أقرب نقطة دالة<input name="landmark" required placeholder="مثال: قرب مدرسة / جامع / سوق" /></label>
+      <label>ملاحظات الطلب <textarea name="notes" rows="2" placeholder="اختياري"></textarea></label>
+      <button class="btn btn-whatsapp" type="submit">إرسال الطلب إلى واتساب</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="config.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
