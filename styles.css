@@ -1328,3 +1328,150 @@ body.cart-is-open{
     font-size:16px !important;
   }
 }
+
+/* =========================================
+   السلة - إصلاح iPhone و Android
+========================================= */
+
+html{
+  -webkit-text-size-adjust:100%;
+}
+
+body.cart-open{
+  overflow:hidden !important;
+  position:fixed !important;
+  width:100%;
+  left:0;
+  right:0;
+  touch-action:none;
+}
+
+/* نافذة السلة */
+.cart-modal{
+  width:min(680px,calc(100% - 12px)) !important;
+  height:94dvh;
+  max-height:94dvh !important;
+  padding:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* رأس السلة */
+.cart-modal .modal-header{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:#fff;
+}
+
+/* المنتجات */
+.cart-items{
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+/* نموذج البيانات */
+.checkout-form{
+  max-height:none !important;
+  overflow:visible !important;
+
+  padding-bottom:
+    max(
+      110px,
+      calc(
+        85px +
+        env(safe-area-inset-bottom)
+      )
+    ) !important;
+}
+
+/* منع تكبير Safari عند الكتابة */
+.checkout-form input,
+.checkout-form textarea,
+.checkout-form select{
+  font-size:16px !important;
+  -webkit-text-size-adjust:100%;
+}
+
+/* زر إرسال الطلب */
+.checkout-form .btn-whatsapp{
+  position:sticky;
+  bottom:
+    max(
+      8px,
+      env(safe-area-inset-bottom)
+    );
+
+  z-index:40;
+
+  width:100%;
+
+  min-height:58px;
+
+  margin-top:18px;
+
+  border-radius:16px;
+
+  box-shadow:
+    0 -12px 30px
+    rgba(255,255,255,.98);
+}
+
+/* زر حذف السلة */
+.cart-tools{
+  display:flex;
+  justify-content:flex-start;
+  padding:14px 20px 4px;
+}
+
+.clear-cart-btn{
+  border:1px solid #dfb3a9;
+  background:#fff6f3;
+  color:#a63726;
+
+  border-radius:13px;
+
+  padding:10px 15px;
+
+  font-weight:800;
+}
+
+/* عند ظهور لوحة المفاتيح */
+@media(max-width:680px){
+
+  .cart-modal{
+    width:calc(100% - 8px) !important;
+    height:96dvh;
+    max-height:96dvh !important;
+
+    border-radius:24px 24px 18px 18px;
+  }
+
+  .cart-modal .modal-header{
+    padding:18px 18px;
+  }
+
+  .cart-items{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .checkout-form{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .checkout-form input,
+  .checkout-form textarea{
+    font-size:16px !important;
+  }
+
+  .checkout-form .btn-whatsapp{
+    min-height:60px;
+    font-size:17px;
+  }
+}
+
