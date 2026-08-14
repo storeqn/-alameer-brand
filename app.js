@@ -97,7 +97,24 @@ function productCard(p){
 function qtyControl(id,qty){return `<div class="qty-control"><button data-dec="${esc(id)}">−</button><span>${qty}</span><button data-inc="${esc(id)}">+</button></div>`}
 
 function renderCategories(){
-  $('#categoryGrid').innerHTML=categories().map((c,i)=>`<button class="category-card" data-category="${esc(c)}"><span class="category-icon">${['✦','◈','◇','✧','◆'][i%5]}</span><strong>${esc(c)}</strong><small>${state.products.filter(p=>p.category===c).length} منتج</small></button>`).join('');
+  const cats = categories();
+
+  $('#categoryGrid').innerHTML = cats.map((c,i) => `
+    <button
+      class="category-card ${state.category === c ? 'active' : ''}"
+      data-category="${esc(c)}">
+
+      <span class="category-icon">
+        ${['✦','◈','◇','✧','◆'][i % 5]}
+      </span>
+
+      <strong>${esc(c)}</strong>
+
+      <small>
+        ${state.products.filter(p => p.category === c).length} منتج
+      </small>
+    </button>
+  `).join('');
 }
 function renderOffers(){
   const arr=state.products.filter(p=>p.offer).slice(0,8); $('#offersGrid').innerHTML=arr.map(productCard).join(''); $('#offersEmpty').hidden=!!arr.length;
@@ -154,7 +171,23 @@ document.addEventListener('click',e=>{
   const dec=e.target.closest('[data-dec]');if(dec){setQty(dec.dataset.dec,cartQty(dec.dataset.dec)-1);return}
   const rem=e.target.closest('[data-remove]');if(rem){setQty(rem.dataset.remove,0);return}
   const op=e.target.closest('[data-open-product]');if(op){openProduct(op.dataset.openProduct);return}
-  const cat=e.target.closest('[data-category]');if(cat){state.category=cat.dataset.category;state.sub='الكل';state.offersOnly=false;renderProducts();location.hash='products';return}
+  const cat = e.target.closest('[data-category]');
+
+if(cat){
+  state.category = cat.dataset.category;
+  state.sub = 'الكل';
+  state.offersOnly = false;
+
+  renderCategories();
+  renderProducts();
+
+  document.querySelector('#products')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+  return;
+}
   const sub=e.target.closest('[data-sub]');if(sub){state.sub=sub.dataset.sub;renderProducts();return}
   const offers=e.target.closest('[data-filter-offers]');if(offers){state.offersOnly=true;state.category='الكل';state.sub='الكل';renderProducts();location.hash='products';return}
   const th=e.target.closest('[data-thumb]');if(th){$('#galleryMain').src=th.dataset.thumb;$$('.thumb').forEach(x=>x.classList.toggle('active',x===th));return}
