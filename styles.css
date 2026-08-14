@@ -1208,3 +1208,58 @@ a{
   font-size:30px;
   font-weight:900;
 }
+
+/* ===== إصلاح الهيدر و Safe Area للآيفون ===== */
+
+.topbar {
+  padding-top: env(safe-area-inset-top);
+}
+
+.topbar-inner {
+  min-height: 64px;
+}
+
+/* عند فتح الموقع من أيقونة الشاشة الرئيسية */
+@media (display-mode: standalone) {
+  .topbar {
+    padding-top: max(env(safe-area-inset-top), 12px);
+  }
+
+  .topbar-inner {
+    min-height: 64px;
+  }
+}
+
+/* تحسين العرض على الهواتف */
+@media (max-width: 680px) {
+
+  .topbar {
+    padding-top: max(env(safe-area-inset-top), 10px);
+  }
+
+  .topbar-inner {
+    min-height: 64px;
+    align-items: center;
+  }
+
+  .brand {
+    align-items: center;
+  }
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
+  .brand-text {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .icon-button,
+  .cart-button {
+    min-width: 46px;
+    min-height: 46px;
+  }
+}
