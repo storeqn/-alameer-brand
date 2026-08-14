@@ -627,26 +627,36 @@ function qtyControl(id,qty){
 
 function renderCategories(){
 
-  const cats =
-    categories();
+  const cats = categories();
 
-  $('#categoryGrid').innerHTML =
-    cats.map(
-      (c,i)=>`
+  $('#categoryGrid').innerHTML = `
+
+    <button
+      class="category-card ${state.category === 'الكل' ? 'active' : ''}"
+      data-category="الكل">
+
+      <span class="category-icon">
+        ◉
+      </span>
+
+      <strong>
+        كل الأقسام
+      </strong>
+
+      <small>
+        ${state.products.length} منتج
+      </small>
+
+    </button>
+
+    ${cats.map((c,i)=>`
 
       <button
-        class="category-card ${
-          state.category === c
-          ? 'active'
-          : ''
-        }"
+        class="category-card ${state.category === c ? 'active' : ''}"
         data-category="${esc(c)}">
 
         <span class="category-icon">
-          ${
-            ['✦','◈','◇','✧','◆']
-            [i%5]
-          }
+          ${['✦','◈','◇','✧','◆'][i%5]}
         </span>
 
         <strong>
@@ -654,22 +664,18 @@ function renderCategories(){
         </strong>
 
         <small>
-
           ${
             state.products.filter(
-              p=>p.category===c
+              p => p.category === c
             ).length
-          }
-          منتج
-
+          } منتج
         </small>
 
       </button>
 
-      `
-    )
-    .join('');
+    `).join('')}
 
+  `;
 }
 
 
@@ -1828,5 +1834,75 @@ if(
 
 
 /* تشغيل الموقع */
+
+/* =========================
+   التنقل الرئيسي
+========================= */
+
+function resetStoreFilters(){
+
+  state.category = 'الكل';
+  state.brand = 'الكل';
+  state.offersOnly = false;
+  state.search = '';
+  state.sort = 'default';
+
+  if($('#searchInput')){
+    $('#searchInput').value = '';
+  }
+
+  renderCategories();
+  renderProducts();
+}
+
+
+/* زر الرئيسية */
+document.addEventListener('click', e => {
+
+  const homeBtn = e.target.closest(
+    'a[href="#home"], [data-go-home]'
+  );
+
+  if(homeBtn){
+
+    e.preventDefault();
+
+    resetStoreFilters();
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+
+    return;
+  }
+
+
+  /* زر الأقسام */
+  const categoriesBtn = e.target.closest(
+    'a[href="#categories"], [data-go-categories]'
+  );
+
+  if(categoriesBtn){
+
+    e.preventDefault();
+
+    state.category = 'الكل';
+    state.brand = 'الكل';
+    state.offersOnly = false;
+
+    renderCategories();
+    renderProducts();
+
+    document.querySelector('#categories')
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+    return;
+  }
+
+});
 
 loadProducts();
