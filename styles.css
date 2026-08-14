@@ -1263,3 +1263,68 @@ a{
     min-height: 46px;
   }
 }
+
+/* ===================================
+   إصلاح السلة والكيبورد في iPhone
+=================================== */
+
+html{
+  -webkit-text-size-adjust:100%;
+}
+
+.checkout-form input,
+.checkout-form textarea,
+.checkout-form select{
+  font-size:16px !important;
+}
+
+.cart-modal{
+  max-height:96dvh;
+  overflow:hidden;
+}
+
+.cart-items{
+  max-height:32dvh;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+.checkout-form{
+  max-height:50dvh;
+  overflow-y:auto;
+  padding-bottom:
+    max(20px,env(safe-area-inset-bottom));
+}
+
+body.cart-is-open{
+  overflow:hidden;
+}
+
+.cart-tools{
+  display:flex;
+  justify-content:flex-start;
+  padding:10px 20px 0;
+}
+
+.clear-cart-btn{
+  border:1px solid #d8b6ad;
+  background:#fff5f2;
+  color:#a13727;
+  border-radius:12px;
+  padding:9px 14px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+@media(max-width:680px){
+
+  .cart-modal{
+    width:calc(100% - 12px);
+    max-height:94dvh;
+  }
+
+  .checkout-form input,
+  .checkout-form textarea{
+    font-size:16px !important;
+  }
+}
