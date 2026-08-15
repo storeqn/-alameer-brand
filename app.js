@@ -1000,13 +1000,41 @@ function openProduct(id){
 
     <div class="product-info">
 
-      <span class="section-kicker">
-        ${esc(
-          [p.category,p.brand]
-          .filter(Boolean)
-          .join(' • ')
-        )}
-      </span>
+     <div class="section-kicker">
+
+  ${
+    p.category
+    ? `
+    <button
+      type="button"
+      class="detail-filter-link"
+      data-detail-category="${esc(p.category)}">
+      ${esc(p.category)}
+    </button>
+    `
+    : ''
+  }
+
+  ${
+    p.category && p.brand
+    ? `<span class="detail-separator">•</span>`
+    : ''
+  }
+
+  ${
+    p.brand
+    ? `
+    <button
+      type="button"
+      class="detail-filter-link"
+      data-detail-brand="${esc(p.brand)}">
+      ${esc(p.brand)}
+    </button>
+    `
+    : ''
+  }
+
+</div>
 
       <h2>${esc(p.name)}</h2>
 
@@ -1675,6 +1703,71 @@ document.addEventListener(
       return;
     }
 
+    const detailCategory =
+  e.target.closest(
+    '[data-detail-category]'
+  );
+
+if(detailCategory){
+
+  state.category =
+    detailCategory.dataset.detailCategory;
+
+  state.brand = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+  document.body.style.overflow = '';
+  state.openProductId = null;
+
+  renderCategories();
+  renderProducts();
+
+  storeView('products');
+
+  document
+    .querySelector('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+
+
+const detailBrand =
+  e.target.closest(
+    '[data-detail-brand]'
+  );
+
+if(detailBrand){
+
+  state.brand =
+    detailBrand.dataset.detailBrand;
+
+  state.category = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+  document.body.style.overflow = '';
+  state.openProductId = null;
+
+  renderCategories();
+  renderProducts();
+
+  storeView('products');
+
+  document
+    .querySelector('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+    
 
     const th =
       e.target.closest(
