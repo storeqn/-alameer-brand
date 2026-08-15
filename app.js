@@ -580,79 +580,86 @@ function renderSubfilters(){
 
   const list = brands();
 
-  const hasBrands = list.length > 0;
+  box.hidden = false;
 
-  
-box.hidden=false;
+  box.innerHTML = `
 
-  box.innerHTML=`
+    ${
+      list.length
+      ? `
+        <div class="brand-filter">
 
-    <div class="brand-filter">
+          <button
+            class="chip ${
+              state.brand === 'الكل'
+              ? 'active'
+              : ''
+            }"
+            data-brand="الكل">
 
-      <button
-        class="chip ${
-          state.brand === 'الكل'
-          ? 'active'
-          : ''
-        }"
-        data-brand="الكل">
+            كل البراندات
 
-        كل البراندات
+          </button>
 
-      </button>
+          ${list.map(b => `
 
-      ${list.map(b=>`
+            <button
+              class="chip ${
+                state.brand === b
+                ? 'active'
+                : ''
+              }"
+              data-brand="${esc(b)}">
 
-        <button
-          class="chip ${
-            state.brand === b
-            ? 'active'
-            : ''
-          }"
-          data-brand="${esc(b)}">
+              ${esc(b)}
 
-          ${esc(b)}
+            </button>
 
-        </button>
+          `).join('')}
 
-      `).join('')}
-
-    </div>
+        </div>
+      `
+      : ''
+    }
 
     <select
       id="priceSort"
       class="sort-select">
 
-      <option value="default"
+      <option
+        value="default"
         ${
-          state.sort==='default'
+          state.sort === 'default'
           ? 'selected'
           : ''
         }>
         الترتيب الافتراضي
       </option>
 
-      <option value="price-low"
+      <option
+        value="price-low"
         ${
-          state.sort==='price-low'
+          state.sort === 'price-low'
           ? 'selected'
           : ''
         }>
         السعر: الأقل إلى الأعلى
       </option>
 
-      <option value="price-high"
+      <option
+        value="price-high"
         ${
-          state.sort==='price-high'
+          state.sort === 'price-high'
           ? 'selected'
           : ''
         }>
         السعر: الأعلى إلى الأقل
       </option>
 
-      <option value="name"
+      <option
+        value="name"
         ${
-          state.sort==='name'
+          state.sort === 'name'
           ? 'selected'
           : ''
         }>
@@ -662,7 +669,6 @@ box.hidden=false;
     </select>
   `;
 }
-
 
 /* =========================
    PRODUCTS
