@@ -21,7 +21,7 @@ const norm = v => String(v ?? '').trim();
 
 const truthy = v =>
   ['1','true','yes','y','نعم','عرض','offer']
-  .includes(norm(v).toLowerCase());
+    .includes(norm(v).toLowerCase());
 
 const esc = s =>
   String(s ?? '').replace(/[&<>'"]/g, c => ({
@@ -33,7 +33,9 @@ const esc = s =>
   }[c]));
 
 const byId = id =>
-  state.products.find(p => String(p.id) === String(id));
+  state.products.find(
+    p => String(p.id) === String(id)
+  );
 
 
 /* =========================
@@ -66,14 +68,24 @@ function parseCSV(text){
       cell='';
     }
 
-    else if((ch==='\n'||ch==='\r') && !q){
+    else if(
+      (ch==='\n' || ch==='\r') &&
+      !q
+    ){
 
-      if(ch==='\r'&&nx==='\n') i++;
+      if(ch==='\r' && nx==='\n')
+        i++;
 
       row.push(cell);
       cell='';
 
-      if(row.some(x=>x.trim()!=='')) rows.push(row);
+      if(
+        row.some(
+          x=>x.trim()!==''
+        )
+      ){
+        rows.push(row);
+      }
 
       row=[];
     }
@@ -85,19 +97,32 @@ function parseCSV(text){
 
   row.push(cell);
 
-  if(row.some(x=>x.trim()!=='')) rows.push(row);
+  if(
+    row.some(
+      x=>x.trim()!==''
+    )
+  ){
+    rows.push(row);
+  }
 
-  if(!rows.length) return [];
+  if(!rows.length)
+    return [];
 
-  const headers=
-    rows.shift().map(h=>h.trim().toLowerCase());
+  const headers =
+    rows
+      .shift()
+      .map(
+        h=>h.trim().toLowerCase()
+      );
 
-  return rows.map(r=>
+  return rows.map(r =>
     Object.fromEntries(
-      headers.map((h,i)=>[
-        h,
-        (r[i]??'').trim()
-      ])
+      headers.map(
+        (h,i)=>[
+          h,
+          (r[i]??'').trim()
+        ]
+      )
     )
   );
 }
@@ -119,62 +144,88 @@ function normalizeProduct(r, idx){
     r.image,
     ...imagesRaw.split(/\s*[|;\n]\s*/)
   ]
-  .map(norm)
-  .filter(Boolean);
+    .map(norm)
+    .filter(Boolean);
 
   const uniqImages =
     [...new Set(images)];
 
   const price =
     Number(
-      String(r.price||0).replace(/[^\d.]/g,'')
+      String(r.price || 0)
+        .replace(/[^\d.]/g,'')
     ) || 0;
 
   const oldPrice =
     Number(
-      String(r.old_price || r.oldprice || 0)
-      .replace(/[^\d.]/g,'')
+      String(
+        r.old_price ||
+        r.oldprice ||
+        0
+      )
+        .replace(/[^\d.]/g,'')
     ) || 0;
 
   const offer =
     truthy(r.offer) ||
     truthy(r.is_offer) ||
-    (oldPrice > price && price > 0) ||
+    (
+      oldPrice > price &&
+      price > 0
+    ) ||
     !!norm(r.discount_note);
 
   return {
 
-    id: norm(r.id) || `p${idx+1}`,
+    id:
+      norm(r.id) ||
+      `p${idx+1}`,
 
-    name: norm(r.name) || 'منتج',
+    name:
+      norm(r.name) ||
+      'منتج',
 
     price,
 
-    old_price: oldPrice,
+    old_price:
+      oldPrice,
 
     offer,
 
-    discount_note: norm(r.discount_note),
+    discount_note:
+      norm(r.discount_note),
 
     images:
       uniqImages.length
-      ? uniqImages
-      : ['assets/logo.png'],
+        ? uniqImages
+        : ['assets/logo.png'],
 
     category:
-      norm(r.category) || 'أخرى',
+      norm(r.category) ||
+      'أخرى',
 
     brand:
-      norm(r.brand) || '',
+      norm(r.brand) ||
+      '',
 
     desc:
-      norm(r.desc || r.description),
+      norm(
+        r.desc ||
+        r.description
+      ),
 
     active:
       r.active === ''
-      ? true
-      : !['0','false','no','لا']
-        .includes(norm(r.active).toLowerCase())
+        ? true
+        : ![
+            '0',
+            'false',
+            'no',
+            'لا'
+          ].includes(
+            norm(r.active)
+              .toLowerCase()
+          )
   };
 }
 
@@ -185,49 +236,70 @@ function normalizeProduct(r, idx){
 
 async function loadProducts(){
 
-  // عرض المنتجات المحفوظة فورًا
-  let cached = [];
+  let cached=[];
 
   try{
-    cached = JSON.parse(
-      localStorage.getItem(C.cacheKey) || '[]'
-    );
+
+    cached =
+      JSON.parse(
+        localStorage.getItem(
+          C.cacheKey
+        ) || '[]'
+      );
+
   }catch(e){
-    cached = [];
+
+    cached=[];
+
   }
+
 
   if(cached.length){
-    state.products = cached;
+
+    state.products=cached;
 
     if($('#loadingCard'))
-      $('#loadingCard').hidden = true;
+      $('#loadingCard').hidden=true;
 
     renderAll();
-  }else{
-    if($('#loadingCard'))
-      $('#loadingCard').hidden = false;
+
   }
 
-  // بعدها تحديث المنتجات من Google Sheets
+  else{
+
+    if($('#loadingCard'))
+      $('#loadingCard').hidden=false;
+
+  }
+
+
   try{
 
-    const res = await fetch(C.sheetCsvUrl, {
-      cache: 'default'
-    });
+    const res =
+      await fetch(
+        C.sheetCsvUrl,
+        {
+          cache:'default'
+        }
+      );
 
     if(!res.ok)
       throw new Error('sheet');
 
-    const text = await res.text();
+    const text =
+      await res.text();
 
-    const rows = parseCSV(text)
-      .map(normalizeProduct)
-      .filter(p => p.active);
+    const rows =
+      parseCSV(text)
+        .map(normalizeProduct)
+        .filter(
+          p=>p.active
+        );
 
     if(!rows.length)
       throw new Error('empty');
 
-    state.products = rows;
+    state.products=rows;
 
     localStorage.setItem(
       C.cacheKey,
@@ -235,25 +307,37 @@ async function loadProducts(){
     );
 
     if($('#loadingCard'))
-      $('#loadingCard').hidden = true;
+      $('#loadingCard').hidden=true;
 
     renderAll();
 
-  }catch(e){
+  }
+
+  catch(e){
+
+    console.error(
+      'Products load error:',
+      e
+    );
 
     if(!cached.length){
 
-      state.products = demoProducts;
+      state.products =
+        demoProducts;
 
       if($('#loadingCard'))
-        $('#loadingCard').hidden = true;
+        $('#loadingCard').hidden=true;
 
       renderAll();
 
-      toast('تعذر تحميل المنتجات.');
+      toast(
+        'تعذر تحميل المنتجات.'
+      );
+
     }
   }
 }
+
 
 const demoProducts=[
   {
@@ -263,10 +347,13 @@ const demoProducts=[
     old_price:0,
     offer:false,
     discount_note:'',
-    images:['assets/logo.png'],
+    images:[
+      'assets/logo.png'
+    ],
     category:'أخرى',
-    brand:'AB',
-    desc:'منتج تجريبي.'
+    brand:'',
+    desc:'منتج تجريبي.',
+    active:true
   }
 ];
 
@@ -280,8 +367,10 @@ function categories(){
   return [
     ...new Set(
       state.products
-      .map(p=>p.category)
-      .filter(Boolean)
+        .map(
+          p=>p.category
+        )
+        .filter(Boolean)
     )
   ];
 }
@@ -292,23 +381,35 @@ function brands(){
   return [
     ...new Set(
       state.products
-      .map(p=>p.brand)
-      .filter(Boolean)
+        .map(
+          p=>p.brand
+        )
+        .filter(Boolean)
     )
-  ].sort((a,b)=>a.localeCompare(b,'ar'));
+  ]
+  .sort(
+    (a,b)=>
+      a.localeCompare(
+        b,
+        'ar'
+      )
+  );
 }
 
 
 function filtered(){
 
   const q =
-    state.search.toLowerCase().trim();
+    state.search
+      .toLowerCase()
+      .trim();
 
   let arr =
     state.products.filter(p=>{
 
       const offerOk =
-        !state.offersOnly || p.offer;
+        !state.offersOnly ||
+        p.offer;
 
       const categoryOk =
         state.category === 'الكل' ||
@@ -326,7 +427,8 @@ function filtered(){
       `.toLowerCase();
 
       const searchOk =
-        !q || searchText.includes(q);
+        !q ||
+        searchText.includes(q);
 
       return (
         offerOk &&
@@ -334,25 +436,51 @@ function filtered(){
         brandOk &&
         searchOk
       );
+
     });
 
 
-  if(state.sort === 'price-low'){
+  if(
+    state.sort ===
+    'price-low'
+  ){
+
     arr.sort(
-      (a,b)=>Number(a.price||0)-Number(b.price||0)
+      (a,b)=>
+        Number(a.price||0) -
+        Number(b.price||0)
     );
+
   }
 
-  if(state.sort === 'price-high'){
+
+  if(
+    state.sort ===
+    'price-high'
+  ){
+
     arr.sort(
-      (a,b)=>Number(b.price||0)-Number(a.price||0)
+      (a,b)=>
+        Number(b.price||0) -
+        Number(a.price||0)
     );
+
   }
 
-  if(state.sort === 'name'){
+
+  if(
+    state.sort ===
+    'name'
+  ){
+
     arr.sort(
-      (a,b)=>a.name.localeCompare(b.name,'ar')
+      (a,b)=>
+        a.name.localeCompare(
+          b.name,
+          'ar'
+        )
     );
+
   }
 
   return arr;
@@ -363,9 +491,10 @@ function filtered(){
    PRODUCT CARD
 ========================= */
 
-function productCard(p, index){
+function productCard(p,index){
 
-  const qty = cartQty(p.id);
+  const qty =
+    cartQty(p.id);
 
   return `
   <article class="product-card">
@@ -375,93 +504,128 @@ function productCard(p, index){
       data-open-product="${esc(p.id)}">
 
       <img
-  class="product-image"
-  src="${esc(p.images[0])}"
-  alt="${esc(p.name)}"
-  loading="${index < 4 ? 'eager' : 'lazy'}"
-  decoding="async"
-  fetchpriority="${index < 4 ? 'high' : 'low'}"
-  onerror="this.src='assets/logo.png'"
->
+        class="product-image"
+        src="${esc(p.images[0])}"
+        alt="${esc(p.name)}"
+        loading="${index < 4 ? 'eager' : 'lazy'}"
+        decoding="async"
+        fetchpriority="${index < 4 ? 'high' : 'low'}"
+        onerror="this.onerror=null;this.src='assets/logo.png'"
+      >
+
       ${
         p.offer
-        ? `<span class="offer-pill">
-            ${esc(p.discount_note || 'عرض')}
-           </span>`
+        ? `
+          <span class="offer-pill">
+            ${esc(
+              p.discount_note ||
+              'عرض'
+            )}
+          </span>
+        `
         : ''
       }
 
       ${
-        p.images.length>1
-        ? `<span class="image-count">
+        p.images.length > 1
+        ? `
+          <span class="image-count">
             📷 ${p.images.length}
-           </span>`
+          </span>
+        `
         : ''
       }
 
     </div>
 
+
     <div class="product-body">
 
       <div class="product-meta">
+
         ${esc(
-          [p.category,p.brand]
+          [
+            p.category,
+            p.brand
+          ]
           .filter(Boolean)
           .join(' • ')
         )}
+
       </div>
+
 
       <h3
         class="product-title"
         data-open-product="${esc(p.id)}">
+
         ${esc(p.name)}
+
       </h3>
+
 
       ${
         p.desc
-        ? `<p class="product-desc">${esc(p.desc)}</p>`
+        ? `
+          <p class="product-desc">
+            ${esc(p.desc)}
+          </p>
+        `
         : ''
       }
+
 
       ${
         p.price > 0
         ? `
-        <div class="price-row">
+          <div class="price-row">
 
-          <span class="price">
-            ${money(p.price)}
-          </span>
+            <span class="price">
+              ${money(p.price)}
+            </span>
 
-          ${
-            p.old_price > p.price
-            ? `
-            <span class="old-price">
-              ${money(p.old_price)}
-            </span>`
-            : ''
-          }
+            ${
+              p.old_price > p.price
+              ? `
+                <span class="old-price">
+                  ${money(p.old_price)}
+                </span>
+              `
+              : ''
+            }
 
-        </div>`
+          </div>
+        `
         : ''
       }
+
 
       <div class="product-actions">
 
         ${
           qty
-          ? qtyControl(p.id,qty)
+          ? qtyControl(
+              p.id,
+              qty
+            )
           : `
-          <button
-            class="add-btn"
-            data-add="${esc(p.id)}">
-            أضف للسلة
-          </button>`
+            <button
+              class="add-btn"
+              data-add="${esc(p.id)}">
+
+              أضف للسلة
+
+            </button>
+          `
         }
+
 
         <button
           class="details-btn"
           data-open-product="${esc(p.id)}">
+
           التفاصيل
+
         </button>
 
       </div>
@@ -476,15 +640,23 @@ function productCard(p, index){
 function qtyControl(id,qty){
 
   return `
-  <div class="qty-control">
+    <div class="qty-control">
 
-    <button data-dec="${esc(id)}">−</button>
+      <button
+        data-dec="${esc(id)}">
+        −
+      </button>
 
-    <span>${qty}</span>
+      <span>
+        ${qty}
+      </span>
 
-    <button data-inc="${esc(id)}">+</button>
+      <button
+        data-inc="${esc(id)}">
+        +
+      </button>
 
-  </div>
+    </div>
   `;
 }
 
@@ -495,9 +667,10 @@ function qtyControl(id,qty){
 
 function renderCategories(){
 
-  const cats = categories();
+  const cats =
+    categories();
 
-  $('#categoryGrid').innerHTML = `
+  $('#categoryGrid').innerHTML=`
 
     <button
       class="category-card ${
@@ -507,15 +680,20 @@ function renderCategories(){
       }"
       data-category="الكل">
 
-      <span class="category-icon">◉</span>
+      <span class="category-icon">
+        ◉
+      </span>
 
-      <strong>كل الأقسام</strong>
+      <strong>
+        كل الأقسام
+      </strong>
 
       <small>
         ${state.products.length} منتج
       </small>
 
     </button>
+
 
     ${cats.map((c,i)=>`
 
@@ -528,23 +706,39 @@ function renderCategories(){
         data-category="${esc(c)}">
 
         <span class="category-icon">
-          ${['✦','◈','◇','✧','◆'][i%5]}
+
+          ${
+            [
+              '✦',
+              '◈',
+              '◇',
+              '✧',
+              '◆'
+            ][i%5]
+          }
+
         </span>
 
-        <strong>${esc(c)}</strong>
+        <strong>
+          ${esc(c)}
+        </strong>
 
         <small>
+
           ${
             state.products.filter(
               p=>p.category===c
             ).length
           }
+
           منتج
+
         </small>
 
       </button>
 
     `).join('')}
+
   `;
 }
 
@@ -557,11 +751,18 @@ function renderOffers(){
 
   const arr =
     state.products
-    .filter(p=>p.offer)
-    .slice(0,8);
+      .filter(
+        p=>p.offer
+      )
+      .slice(
+        0,
+        8
+      );
 
   $('#offersGrid').innerHTML =
-    arr.map(productCard).join('');
+    arr
+      .map(productCard)
+      .join('');
 
   $('#offersEmpty').hidden =
     !!arr.length;
@@ -574,15 +775,18 @@ function renderOffers(){
 
 function renderSubfilters(){
 
-  const box = $('#subfilters');
+  const box =
+    $('#subfilters');
 
-  if(!box) return;
+  if(!box)
+    return;
 
-  const list = brands();
+  const list =
+    brands();
 
-  box.hidden = false;
+  box.hidden=false;
 
-  box.innerHTML = `
+  box.innerHTML=`
 
     ${
       list.length
@@ -601,7 +805,8 @@ function renderSubfilters(){
 
           </button>
 
-          ${list.map(b => `
+
+          ${list.map(b=>`
 
             <button
               class="chip ${
@@ -622,6 +827,7 @@ function renderSubfilters(){
       : ''
     }
 
+
     <select
       id="priceSort"
       class="sort-select">
@@ -633,8 +839,11 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
+
         الترتيب الافتراضي
+
       </option>
+
 
       <option
         value="price-low"
@@ -643,8 +852,11 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
+
         السعر: الأقل إلى الأعلى
+
       </option>
+
 
       <option
         value="price-high"
@@ -653,8 +865,11 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
+
         السعر: الأعلى إلى الأقل
+
       </option>
+
 
       <option
         value="name"
@@ -663,12 +878,15 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
+
         حسب الاسم
+
       </option>
 
     </select>
   `;
 }
+
 
 /* =========================
    PRODUCTS
@@ -676,10 +894,13 @@ function renderSubfilters(){
 
 function renderProducts(){
 
-  const arr = filtered();
+  const arr =
+    filtered();
 
   $('#productsGrid').innerHTML =
-    arr.map(productCard).join('');
+    arr
+      .map(productCard)
+      .join('');
 
   $('#productsEmpty').hidden =
     !!arr.length;
@@ -687,16 +908,33 @@ function renderProducts(){
   $('#productsCount').textContent =
     `${arr.length} منتج`;
 
-  let title='كل المنتجات';
+  let title =
+    'كل المنتجات';
 
-  if(state.offersOnly)
-    title='كل العروض';
+  if(state.offersOnly){
 
-  else if(state.brand !== 'الكل')
-    title=`منتجات ${state.brand}`;
+    title =
+      'كل العروض';
 
-  else if(state.category !== 'الكل')
-    title=state.category;
+  }
+
+  else if(
+    state.brand !== 'الكل'
+  ){
+
+    title =
+      `منتجات ${state.brand}`;
+
+  }
+
+  else if(
+    state.category !== 'الكل'
+  ){
+
+    title =
+      state.category;
+
+  }
 
   $('#productsTitle').textContent =
     title;
@@ -711,6 +949,7 @@ function renderAll(){
   renderOffers();
   renderProducts();
   updateCartUI();
+
 }
 
 
@@ -722,9 +961,12 @@ function cartQty(id){
 
   return (
     state.cart.find(
-      x=>String(x.id)===String(id)
+      x=>
+        String(x.id) ===
+        String(id)
     )?.qty || 0
   );
+
 }
 
 
@@ -732,7 +974,9 @@ function saveCart(){
 
   localStorage.setItem(
     'alameer_cart_v2',
-    JSON.stringify(state.cart)
+    JSON.stringify(
+      state.cart
+    )
   );
 
   updateCartUI();
@@ -741,8 +985,12 @@ function saveCart(){
 
   renderOffers();
 
-  if($('#cartModal')?.open)
+  if(
+    $('#cartModal')?.open
+  ){
     renderCart();
+  }
+
 }
 
 
@@ -750,37 +998,53 @@ function add(id,n=1){
 
   const x =
     state.cart.find(
-      i=>String(i.id)===String(id)
+      i=>
+        String(i.id) ===
+        String(id)
     );
 
   if(x){
-    x.qty+=n;
+
+    x.qty += n;
+
   }
 
   else{
+
     state.cart.push({
       id,
       qty:n
     });
+
   }
 
   saveCart();
 
-  const qty=cartQty(id);
+  const qty =
+    cartQty(id);
 
-  const detailQty=$('#detailQty');
+  const detailQty =
+    $('#detailQty');
 
   if(
     detailQty &&
-    String(state.openProductId)===String(id)
+    String(
+      state.openProductId
+    ) === String(id)
   ){
-    detailQty.innerHTML=
-      qtyControl(id,qty);
+
+    detailQty.innerHTML =
+      qtyControl(
+        id,
+        qty
+      );
+
   }
 
   toast(
     `تمت الإضافة للسلة • العدد ${qty}`
   );
+
 }
 
 
@@ -788,10 +1052,15 @@ function setQty(id,qty){
 
   const x =
     state.cart.find(
-      i=>String(i.id)===String(id)
+      i=>
+        String(i.id) ===
+        String(id)
     );
 
-  if(!x && qty>0){
+  if(
+    !x &&
+    qty > 0
+  ){
 
     state.cart.push({
       id,
@@ -806,21 +1075,30 @@ function setQty(id,qty){
 
   }
 
+
   state.cart =
-    state.cart.filter(i=>i.qty>0);
+    state.cart.filter(
+      i=>i.qty>0
+    );
 
   saveCart();
+
 }
 
 
 function cartData(){
 
   return state.cart
-    .map(x=>({
-      p:byId(x.id),
-      qty:x.qty
-    }))
-    .filter(x=>x.p);
+    .map(
+      x=>({
+        p:byId(x.id),
+        qty:x.qty
+      })
+    )
+    .filter(
+      x=>x.p
+    );
+
 }
 
 
@@ -832,29 +1110,43 @@ function updateCartUI(){
       0
     );
 
-  if($('#cartCount'))
-    $('#cartCount').textContent=n;
+  if($('#cartCount')){
 
-  if($('#bottomCartCount'))
-    $('#bottomCartCount').textContent=n;
+    $('#cartCount')
+      .textContent=n;
+
+  }
+
+  if($('#bottomCartCount')){
+
+    $('#bottomCartCount')
+      .textContent=n;
+
+  }
+
 }
 
 
 function renderCart(){
 
-  const items = cartData();
+  const items =
+    cartData();
 
   $('#cartItems').innerHTML =
 
     items.length
 
-    ? items.map(({p,qty})=>`
+    ? items.map(
+      ({p,qty})=>`
 
       <div class="cart-item">
 
         <img
           src="${esc(p.images[0])}"
-          alt="${esc(p.name)}">
+          alt="${esc(p.name)}"
+          loading="lazy"
+          decoding="async"
+        >
 
         <div>
 
@@ -865,15 +1157,20 @@ function renderCart(){
           ${
             p.price > 0
             ? `
-            <p>
-              ${money(p.price)} × ${qty}
-            </p>`
+              <p>
+                ${money(p.price)} × ${qty}
+              </p>
+            `
             : ''
           }
 
-          ${qtyControl(p.id,qty)}
+          ${qtyControl(
+            p.id,
+            qty
+          )}
 
         </div>
+
 
         <button
           class="remove-btn"
@@ -889,7 +1186,9 @@ function renderCart(){
 
     : `
       <div class="empty-card">
+
         السلة فارغة.
+
       </div>
     `;
 
@@ -904,7 +1203,11 @@ function renderCart(){
   const total =
     items.reduce(
       (s,x)=>
-        s+(x.p.price*x.qty),
+        s +
+        (
+          x.p.price *
+          x.qty
+        ),
       0
     );
 
@@ -916,34 +1219,43 @@ function renderCart(){
   let clearTools =
     $('#cartClearTools');
 
+
   if(!clearTools){
 
-    $('#cartItems').insertAdjacentHTML(
-      'beforebegin',
-      `
-      <div
-        class="cart-tools"
-        id="cartClearTools">
+    $('#cartItems')
+      .insertAdjacentHTML(
+        'beforebegin',
+        `
+          <div
+            class="cart-tools"
+            id="cartClearTools">
 
-        <button
-          type="button"
-          class="clear-cart-btn"
-          data-clear-cart>
+            <button
+              type="button"
+              class="clear-cart-btn"
+              data-clear-cart>
 
-          حذف السلة بالكامل
+              حذف السلة بالكامل
 
-        </button>
+            </button>
 
-      </div>
-      `
-    );
+          </div>
+        `
+      );
+
   }
+
 
   const clearBtn =
     $('[data-clear-cart]');
 
-  if(clearBtn)
-    clearBtn.hidden=!items.length;
+  if(clearBtn){
+
+    clearBtn.hidden =
+      !items.length;
+
+  }
+
 }
 
 
@@ -953,156 +1265,210 @@ function renderCart(){
 
 function openProduct(id){
 
-  const p = byId(id);
+  const p =
+    byId(id);
 
-  if(!p) return;
+  if(!p)
+    return;
 
   state.openProductId=id;
 
   const modal =
     $('#productModal');
-  
-  document.body.style.overflow = 'hidden';
+
+  document.body.style.overflow =
+    'hidden';
+
 
   $('#productModalContent').innerHTML=`
 
-  <div class="product-detail">
+    <div class="product-detail">
 
-    <div class="gallery">
+      <div class="gallery">
 
-      <div class="gallery-main">
+        <div class="gallery-main">
 
-        <img
-          id="galleryMain"
-          src="${esc(p.images[0])}"
-          alt="${esc(p.name)}">
+          <img
+            id="galleryMain"
+            src="${esc(p.images[0])}"
+            alt="${esc(p.name)}"
+            decoding="async"
+          >
+
+        </div>
+
+
+        ${
+          p.images.length > 1
+          ? `
+            <div class="thumbs">
+
+              ${p.images.map(
+                (im,i)=>`
+
+                <button
+                  class="thumb ${
+                    i===0
+                    ? 'active'
+                    : ''
+                  }"
+                  data-thumb="${esc(im)}">
+
+                  <img
+                    src="${esc(im)}"
+                    alt="صورة ${i+1}"
+                    loading="lazy"
+                    decoding="async"
+                  >
+
+                </button>
+
+              `).join('')}
+
+            </div>
+          `
+          : ''
+        }
 
       </div>
 
-      ${
-        p.images.length>1
-        ? `
-        <div class="thumbs">
 
-          ${p.images.map((im,i)=>`
-
-            <button
-              class="thumb ${
-                i===0?'active':''
-              }"
-              data-thumb="${esc(im)}">
-
-              <img
-                src="${esc(im)}"
-                alt="صورة ${i+1}">
-
-            </button>
-
-          `).join('')}
-
-        </div>`
-        : ''
-      }
-
-    </div>
+      <div class="product-info">
 
 
-    <div class="product-info">
-
-    <div class="section-kicker detail-links">
-
-  ${
-    p.category
-    ? `
-    <button
-      type="button"
-      class="detail-filter-link"
-      data-detail-category="${esc(p.category)}">
-      ${esc(p.category)}
-    </button>
-    `
-    : ''
-  }
-
-  ${
-    p.brand
-    ? `
-    <button
-      type="button"
-      class="detail-filter-link"
-      data-detail-brand="${esc(p.brand)}">
-      ${esc(p.brand)}
-    </button>
-    `
-    : ''
-  }
-
-</div>
-
-      <h2>${esc(p.name)}</h2>
-
-      ${
-        p.price>0
-        ? `
-        <div class="price-row">
-
-          <span class="price">
-            ${money(p.price)}
-          </span>
+        <div class="section-kicker detail-links">
 
           ${
-            p.old_price>p.price
+            p.category
             ? `
-            <span class="old-price">
-              ${money(p.old_price)}
-            </span>`
+              <button
+                type="button"
+                class="detail-filter-link"
+                data-detail-category="${esc(p.category)}">
+
+                ${esc(p.category)}
+
+              </button>
+            `
             : ''
           }
 
-        </div>`
-        : ''
-      }
-
-      ${
-        p.desc
-        ? `
-        <div class="full-desc">
-          ${esc(p.desc)}
-        </div>`
-        : ''
-      }
-
-      <div class="detail-add">
-
-        <div id="detailQty">
 
           ${
-            cartQty(p.id)
-            ? qtyControl(
-                p.id,
-                cartQty(p.id)
-              )
+            p.brand
+            ? `
+              <button
+                type="button"
+                class="detail-filter-link"
+                data-detail-brand="${esc(p.brand)}">
+
+                ${esc(p.brand)}
+
+              </button>
+            `
             : ''
           }
 
         </div>
 
-        <button
-          class="add-btn"
-          data-add="${esc(p.id)}">
 
-          أضف قطعة للسلة
+        <h2>
+          ${esc(p.name)}
+        </h2>
 
-        </button>
+
+        ${
+          p.price > 0
+          ? `
+            <div class="price-row">
+
+              <span class="price">
+                ${money(p.price)}
+              </span>
+
+              ${
+                p.old_price > p.price
+                ? `
+                  <span class="old-price">
+                    ${money(p.old_price)}
+                  </span>
+                `
+                : ''
+              }
+
+            </div>
+          `
+          : ''
+        }
+
+
+        ${
+          p.desc
+          ? `
+            <div class="full-desc">
+              ${esc(p.desc)}
+            </div>
+          `
+          : ''
+        }
+
+
+        <div class="detail-add">
+
+          <div id="detailQty">
+
+            ${
+              cartQty(p.id)
+              ? qtyControl(
+                  p.id,
+                  cartQty(p.id)
+                )
+              : ''
+            }
+
+          </div>
+
+
+          <button
+            class="add-btn"
+            data-add="${esc(p.id)}">
+
+            أضف قطعة للسلة
+
+          </button>
+
+        </div>
 
       </div>
 
     </div>
-
-  </div>
   `;
 
+
   modal.showModal();
+
+}
+
+
+/* =========================
+   CLOSE PRODUCT
+========================= */
+
+function closeProduct(){
+
+  if(
+    $('#productModal')?.open
+  ){
+
+    $('#productModal')
+      .close();
+
+  }
+
+  document.body.style.overflow='';
+
+  state.openProductId=null;
+
 }
 
 
@@ -1111,6 +1477,7 @@ function openProduct(id){
 ========================= */
 
 let cartScrollY=0;
+
 
 function openCart(){
 
@@ -1128,6 +1495,7 @@ function openCart(){
 
   $('#cartModal').showModal();
 
+
   setTimeout(()=>{
 
     const first =
@@ -1137,13 +1505,20 @@ function openCart(){
       first.blur();
 
   },50);
+
 }
 
 
 function closeCart(){
 
-  if($('#cartModal')?.open)
-    $('#cartModal').close();
+  if(
+    $('#cartModal')?.open
+  ){
+
+    $('#cartModal')
+      .close();
+
+  }
 
   document.body.classList.remove(
     'cart-open'
@@ -1155,6 +1530,7 @@ function closeCart(){
     0,
     cartScrollY
   );
+
 }
 
 
@@ -1171,7 +1547,9 @@ function checkout(e){
 
   if(!items.length){
 
-    toast('السلة فارغة');
+    toast(
+      'السلة فارغة'
+    );
 
     return;
   }
@@ -1188,12 +1566,17 @@ function checkout(e){
       (sum,x)=>{
 
         const unit =
-          x.p.old_price > x.p.price
+          x.p.old_price >
+          x.p.price
+
           ? x.p.old_price
+
           : x.p.price;
 
-        return sum+
-          unit*x.qty;
+        return (
+          sum +
+          unit * x.qty
+        );
 
       },
       0
@@ -1203,8 +1586,11 @@ function checkout(e){
   const afterDiscount =
     items.reduce(
       (sum,x)=>
-        sum+
-        (x.p.price*x.qty),
+        sum +
+        (
+          x.p.price *
+          x.qty
+        ),
       0
     );
 
@@ -1212,23 +1598,27 @@ function checkout(e){
   const saving =
     Math.max(
       0,
-      beforeDiscount-afterDiscount
+      beforeDiscount -
+      afterDiscount
     );
 
 
   const num =
     n=>
       Number(n||0)
-      .toLocaleString('en-US');
+        .toLocaleString(
+          'en-US'
+        );
 
 
   const productsText =
-    items.map((x,i)=>
+    items.map(
+      (x,i)=>
 
-      `${i+1}) ${x.p.name}` +
-      ` | عدد: ${x.qty}` +
-      ` | سعر: ${num(x.p.price)}` +
-      ` | مجموع: ${num(x.p.price*x.qty)}`
+        `${i+1}) ${x.p.name}` +
+        ` | عدد: ${x.qty}` +
+        ` | سعر: ${num(x.p.price)}` +
+        ` | مجموع: ${num(x.p.price*x.qty)}`
 
     ).join('\n');
 
@@ -1251,6 +1641,7 @@ function checkout(e){
 
   let fullAddress =
     address;
+
 
   if(landmark){
 
@@ -1289,6 +1680,7 @@ ${productsText}
     '_blank',
     'noopener'
   );
+
 }
 
 
@@ -1298,21 +1690,32 @@ ${productsText}
 
 function toast(msg){
 
-  const t=$('#toast');
+  const t =
+    $('#toast');
 
-  if(!t) return;
+  if(!t)
+    return;
 
-  t.textContent=msg;
+  t.textContent =
+    msg;
 
-  t.classList.add('show');
+  t.classList.add(
+    'show'
+  );
 
-  clearTimeout(t._x);
+  clearTimeout(
+    t._x
+  );
 
-  t._x=
+  t._x =
     setTimeout(
-      ()=>t.classList.remove('show'),
+      ()=>
+        t.classList.remove(
+          'show'
+        ),
       2200
     );
+
 }
 
 
@@ -1323,14 +1726,18 @@ function toast(msg){
 function openDrawer(v=true){
 
   $('#drawer')
-  .classList
-  .toggle('open',v);
+    ?.classList
+    .toggle(
+      'open',
+      v
+    );
 
   $('#drawer')
-  .setAttribute(
-    'aria-hidden',
-    String(!v)
-  );
+    ?.setAttribute(
+      'aria-hidden',
+      String(!v)
+    );
+
 }
 
 
@@ -1341,37 +1748,61 @@ function openDrawer(v=true){
 function storeView(mode){
 
   const hero =
-    document.querySelector('.hero');
+    document.querySelector(
+      '.hero'
+    );
 
   const toolbar =
-    document.querySelector('.toolbar');
+    document.querySelector(
+      '.toolbar'
+    );
 
   const offers =
-    document.querySelector('#offers');
+    document.querySelector(
+      '#offers'
+    );
 
   const categories =
-    document.querySelector('#categories');
+    document.querySelector(
+      '#categories'
+    );
 
   const products =
-    document.querySelector('#products');
+    document.querySelector(
+      '#products'
+    );
 
 
   if(mode==='home'){
 
-    if(hero) hero.hidden=false;
-    if(toolbar) toolbar.hidden=false;
-    if(offers) offers.hidden=false;
-    if(categories) categories.hidden=false;
-    if(products) products.hidden=false;
+    if(hero)
+      hero.hidden=false;
+
+    if(toolbar)
+      toolbar.hidden=false;
+
+    if(offers)
+      offers.hidden=false;
+
+    if(categories)
+      categories.hidden=false;
+
+    if(products)
+      products.hidden=false;
 
   }
 
 
   if(mode==='categories'){
 
-    if(hero) hero.hidden=true;
-    if(toolbar) toolbar.hidden=true;
-    if(offers) offers.hidden=true;
+    if(hero)
+      hero.hidden=true;
+
+    if(toolbar)
+      toolbar.hidden=true;
+
+    if(offers)
+      offers.hidden=true;
 
     if(categories)
       categories.hidden=false;
@@ -1384,8 +1815,11 @@ function storeView(mode){
 
   if(mode==='products'){
 
-    if(hero) hero.hidden=true;
-    if(offers) offers.hidden=true;
+    if(hero)
+      hero.hidden=true;
+
+    if(offers)
+      offers.hidden=true;
 
     if(toolbar)
       toolbar.hidden=false;
@@ -1397,6 +1831,7 @@ function storeView(mode){
       products.hidden=false;
 
   }
+
 }
 
 
@@ -1409,11 +1844,16 @@ function resetStoreFilters(){
   state.sort='default';
 
   if($('#searchInput')){
-    $('#searchInput').value='';
+
+    $('#searchInput')
+      .value='';
+
   }
 
   renderCategories();
+
   renderProducts();
+
 }
 
 
@@ -1421,68 +1861,94 @@ function resetStoreFilters(){
    BUTTON EVENTS
 ========================= */
 
-if($('#menuBtn'))
-  $('#menuBtn').onclick=
+if($('#menuBtn')){
+
+  $('#menuBtn').onclick =
     ()=>openDrawer(true);
 
-if($('#closeMenuBtn'))
-  $('#closeMenuBtn').onclick=
+}
+
+
+if($('#closeMenuBtn')){
+
+  $('#closeMenuBtn').onclick =
     ()=>openDrawer(false);
 
-if($('#drawerBackdrop'))
-  $('#drawerBackdrop').onclick=
+}
+
+
+if($('#drawerBackdrop')){
+
+  $('#drawerBackdrop').onclick =
     ()=>openDrawer(false);
+
+}
 
 
 $$('.drawer-nav a')
-.forEach(
-  a=>a.onclick=
-    ()=>openDrawer(false)
-);
+  .forEach(
+    a=>
+      a.onclick=
+        ()=>openDrawer(false)
+  );
 
 
-if($('#cartBtn'))
-  $('#cartBtn').onclick=
+if($('#cartBtn')){
+
+  $('#cartBtn').onclick =
     openCart;
 
-if($('#bottomCartBtn'))
-  $('#bottomCartBtn').onclick=
+}
+
+
+if($('#bottomCartBtn')){
+
+  $('#bottomCartBtn').onclick =
     openCart;
 
-if($('#checkoutForm'))
-  $('#checkoutForm').onsubmit=
+}
+
+
+if($('#checkoutForm')){
+
+  $('#checkoutForm').onsubmit =
     checkout;
+
+}
 
 
 if($('#searchInput')){
 
   $('#searchInput')
-  .addEventListener(
-    'input',
-    e=>{
+    .addEventListener(
+      'input',
+      e=>{
 
-      state.search=
-        e.target.value;
+        state.search =
+          e.target.value;
 
-      renderProducts();
+        renderProducts();
 
-    }
-  );
+      }
+    );
+
 }
 
 
 if($('#showAllBtn')){
 
-  $('#showAllBtn').onclick=
+  $('#showAllBtn').onclick =
     ()=>{
 
       resetStoreFilters();
 
       storeView('home');
 
-      location.hash='products';
+      location.hash =
+        'products';
 
     };
+
 }
 
 
@@ -1496,46 +1962,63 @@ document.addEventListener(
 
 
     const addBtn =
-      e.target.closest('[data-add]');
+      e.target.closest(
+        '[data-add]'
+      );
 
     if(addBtn){
 
-      add(addBtn.dataset.add);
+      add(
+        addBtn.dataset.add
+      );
 
       return;
+
     }
 
 
     const inc =
-      e.target.closest('[data-inc]');
+      e.target.closest(
+        '[data-inc]'
+      );
 
     if(inc){
 
       setQty(
         inc.dataset.inc,
-        cartQty(inc.dataset.inc)+1
+        cartQty(
+          inc.dataset.inc
+        ) + 1
       );
 
       return;
+
     }
 
 
     const dec =
-      e.target.closest('[data-dec]');
+      e.target.closest(
+        '[data-dec]'
+      );
 
     if(dec){
 
       setQty(
         dec.dataset.dec,
-        cartQty(dec.dataset.dec)-1
+        cartQty(
+          dec.dataset.dec
+        ) - 1
       );
 
       return;
+
     }
 
 
     const rem =
-      e.target.closest('[data-remove]');
+      e.target.closest(
+        '[data-remove]'
+      );
 
     if(rem){
 
@@ -1545,6 +2028,7 @@ document.addEventListener(
       );
 
       return;
+
     }
 
 
@@ -1555,7 +2039,9 @@ document.addEventListener(
 
     if(clearCart){
 
-      if(state.cart.length){
+      if(
+        state.cart.length
+      ){
 
         state.cart=[];
 
@@ -1566,9 +2052,11 @@ document.addEventListener(
         toast(
           'تم حذف السلة بالكامل'
         );
+
       }
 
       return;
+
     }
 
 
@@ -1584,6 +2072,7 @@ document.addEventListener(
       );
 
       return;
+
     }
 
 
@@ -1606,6 +2095,7 @@ document.addEventListener(
       });
 
       return;
+
     }
 
 
@@ -1624,16 +2114,21 @@ document.addEventListener(
 
       renderCategories();
 
-      storeView('categories');
+      storeView(
+        'categories'
+      );
 
       document
-      .querySelector('#categories')
-      ?.scrollIntoView({
-        behavior:'smooth',
-        block:'start'
-      });
+        .querySelector(
+          '#categories'
+        )
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
 
       return;
+
     }
 
 
@@ -1644,26 +2139,32 @@ document.addEventListener(
 
     if(cat){
 
-      state.category=
+      state.category =
         cat.dataset.category;
 
       state.brand='الكل';
+
       state.offersOnly=false;
 
       renderCategories();
 
       renderProducts();
 
-      storeView('products');
+      storeView(
+        'products'
+      );
 
       document
-      .querySelector('#products')
-      ?.scrollIntoView({
-        behavior:'smooth',
-        block:'start'
-      });
+        .querySelector(
+          '#products'
+        )
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
 
       return;
+
     }
 
 
@@ -1682,6 +2183,7 @@ document.addEventListener(
       renderProducts();
 
       return;
+
     }
 
 
@@ -1695,146 +2197,105 @@ document.addEventListener(
       state.offersOnly=true;
 
       state.category='الكل';
+
       state.brand='الكل';
 
       renderCategories();
 
       renderProducts();
 
-      storeView('products');
+      storeView(
+        'products'
+      );
 
       return;
+
     }
 
-    const detailCategory =
-  e.target.closest(
-    '[data-detail-category]'
-  );
 
-if(detailCategory){
-
-  state.category =
-    detailCategory.dataset.detailCategory;
-
-  state.brand = 'الكل';
-  state.offersOnly = false;
-
-  $('#productModal')?.close();
-  document.body.style.overflow = '';
-  state.openProductId = null;
-
-  renderCategories();
-  renderProducts();
-
-  storeView('products');
-
-  
-  document
-    .querySelector('#products')
-    ?.scrollIntoView({
-      behavior:'smooth',
-      block:'start'
-    });
-
-  return;
-}
-
-const detailBrand =
-  e.target.closest(
-    '[data-detail-brand]'
-  );
-
-if(detailBrand){
-
-  state.brand =
-    detailBrand.dataset.detailBrand;
-
-  state.category = 'الكل';
-  state.offersOnly = false;
-
-  $('#productModal')?.close();
-  document.body.style.overflow = '';
-  state.openProductId = null;
-
-  renderCategories();
-  renderProducts();
-
-  storeView('products');
-
-  document
-    .querySelector('#products')
-    ?.scrollIntoView({
-      behavior:'smooth',
-      block:'start'
-    });
-
-  return;
-}
+    /* القسم من تفاصيل المنتج */
 
     const detailCategory =
-  e.target.closest(
-    '[data-detail-category]'
-  );
+      e.target.closest(
+        '[data-detail-category]'
+      );
 
-if(detailCategory){
+    if(detailCategory){
 
-  state.category =
-    detailCategory.dataset.detailCategory;
+      state.category =
+        detailCategory
+          .dataset
+          .detailCategory;
 
-  state.brand = 'الكل';
-  state.offersOnly = false;
+      state.brand='الكل';
 
-  $('#productModal')?.close();
-  document.body.style.overflow = '';
-  state.openProductId = null;
+      state.offersOnly=false;
 
-  renderCategories();
-  renderProducts();
+      closeProduct();
 
-  storeView('products');
+      renderCategories();
 
-  document
-    .querySelector('#products')
-    ?.scrollIntoView({
-      behavior:'smooth',
-      block:'start'
-    });
+      renderProducts();
 
-  return;
-}
+      storeView(
+        'products'
+      );
+
+      document
+        .querySelector(
+          '#products'
+        )
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
+
+      return;
+
+    }
 
 
-const detailBrand =
-  e.target.closest(
-    '[data-detail-brand]'
-  );
+    /* البراند من تفاصيل المنتج */
 
-if(detailBrand){
+    const detailBrand =
+      e.target.closest(
+        '[data-detail-brand]'
+      );
 
-  state.brand =
-    detailBrand.dataset.detailBrand;
+    if(detailBrand){
 
-  state.category = 'الكل';
-  state.offersOnly = false;
+      state.brand =
+        detailBrand
+          .dataset
+          .detailBrand;
 
-  $('#productModal')?.close();
-  document.body.style.overflow = '';
-  state.openProductId = null;
+      state.category='الكل';
 
-  renderCategories();
-  renderProducts();
+      state.offersOnly=false;
 
-  storeView('products');
+      closeProduct();
 
-  document
-    .querySelector('#products')
-    ?.scrollIntoView({
-      behavior:'smooth',
-      block:'start'
-    });
+      renderCategories();
 
-  return;
-}
+      renderProducts();
+
+      storeView(
+        'products'
+      );
+
+      document
+        .querySelector(
+          '#products'
+        )
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
+
+      return;
+
+    }
+
 
     const th =
       e.target.closest(
@@ -1843,56 +2304,72 @@ if(detailBrand){
 
     if(th){
 
-      $('#galleryMain').src =
-        th.dataset.thumb;
+      const main =
+        $('#galleryMain');
+
+      if(main){
+
+        main.src =
+          th.dataset.thumb;
+
+      }
+
 
       $$('.thumb')
-      .forEach(
-        x=>
-          x.classList.toggle(
-            'active',
-            x===th
-          )
-      );
+        .forEach(
+          x=>
+            x.classList.toggle(
+              'active',
+              x===th
+            )
+        );
 
       return;
+
     }
 
 
     const close =
-  e.target.closest(
-    '[data-close-modal]'
-  );
+      e.target.closest(
+        '[data-close-modal]'
+      );
 
-if(close){
+    if(close){
 
-  const id =
-    close.dataset.closeModal;
+      const id =
+        close.dataset
+          .closeModal;
 
-  if(id==='cartModal'){
 
-    closeCart();
+      if(
+        id ===
+        'cartModal'
+      ){
 
-  }
+        closeCart();
 
-  else if(id==='productModal'){
+      }
 
-    $('#productModal')?.close();
+      else if(
+        id ===
+        'productModal'
+      ){
 
-    document.body.style.overflow = '';
+        closeProduct();
 
-    state.openProductId = null;
+      }
 
-  }
+      else{
 
-  else{
+        $('#'+id)
+          ?.close();
 
-    $('#'+id)?.close();
+      }
 
-  }
+      return;
 
-  return;
-}
+    }
+
   }
 );
 
@@ -1905,9 +2382,12 @@ document.addEventListener(
   'change',
   e=>{
 
-    if(e.target.id==='priceSort'){
+    if(
+      e.target.id ===
+      'priceSort'
+    ){
 
-      state.sort=
+      state.sort =
         e.target.value;
 
       renderProducts();
@@ -1919,34 +2399,60 @@ document.addEventListener(
 
 
 /* =========================
+   PRODUCT MODAL CLOSE
+========================= */
+
+$('#productModal')
+  ?.addEventListener(
+    'close',
+    ()=>{
+
+      document.body
+        .style
+        .overflow='';
+
+      state.openProductId=null;
+
+    }
+  );
+
+
+/* =========================
    CART CLOSE
 ========================= */
 
 $('#cartModal')
-?.addEventListener(
-  'close',
-  ()=>{
+  ?.addEventListener(
+    'close',
+    ()=>{
 
-    if(
-      document.body
-      .classList
-      .contains('cart-open')
-    ){
+      if(
+        document.body
+          .classList
+          .contains(
+            'cart-open'
+          )
+      ){
 
-      document.body
-      .classList
-      .remove('cart-open');
+        document.body
+          .classList
+          .remove(
+            'cart-open'
+          );
 
-      document.body.style.top='';
+        document.body
+          .style
+          .top='';
 
-      window.scrollTo(
-        0,
-        cartScrollY
-      );
+        window.scrollTo(
+          0,
+          cartScrollY
+        );
+
+      }
+
     }
-
-  }
-);
+  );
 
 
 /* =========================
@@ -1956,8 +2462,14 @@ $('#cartModal')
 window.addEventListener(
   'online',
   ()=>{
-    if($('#offlineBar'))
-      $('#offlineBar').hidden=true;
+
+    if($('#offlineBar')){
+
+      $('#offlineBar')
+        .hidden=true;
+
+    }
+
   }
 );
 
@@ -1965,36 +2477,57 @@ window.addEventListener(
 window.addEventListener(
   'offline',
   ()=>{
-    if($('#offlineBar'))
-      $('#offlineBar').hidden=false;
+
+    if($('#offlineBar')){
+
+      $('#offlineBar')
+        .hidden=false;
+
+    }
+
   }
 );
 
 
-if($('#offlineBar'))
-  $('#offlineBar').hidden=
+if($('#offlineBar')){
+
+  $('#offlineBar').hidden =
     navigator.onLine;
 
+}
 
-if($('#year'))
-  $('#year').textContent=
-    new Date().getFullYear();
+
+if($('#year')){
+
+  $('#year').textContent =
+    new Date()
+      .getFullYear();
+
+}
 
 
 /* =========================
    SERVICE WORKER
 ========================= */
 
-if('serviceWorker' in navigator){
+if(
+  'serviceWorker'
+  in navigator
+){
 
   window.addEventListener(
     'load',
     ()=>
       navigator
-      .serviceWorker
-      .register('./sw.js')
-      .catch(()=>{})
+        .serviceWorker
+        .register(
+          './sw.js'
+        )
+        .catch(
+          ()=>{}
+        )
   );
+
 }
 
 
