@@ -952,6 +952,8 @@ function openProduct(id){
 
   const modal =
     $('#productModal');
+  
+  document.body.style.overflow = 'hidden';
 
   $('#productModalContent').innerHTML=`
 
@@ -1698,30 +1700,39 @@ document.addEventListener(
 
 
     const close =
-      e.target.closest(
-        '[data-close-modal]'
-      );
+  e.target.closest(
+    '[data-close-modal]'
+  );
 
-    if(close){
+if(close){
 
-      const id =
-        close.dataset.closeModal;
+  const id =
+    close.dataset.closeModal;
 
-      if(id==='cartModal'){
+  if(id==='cartModal'){
 
-        closeCart();
+    closeCart();
 
-      }
+  }
 
-      else{
+  else if(id==='productModal'){
 
-        $('#'+id)?.close();
+    $('#productModal')?.close();
 
-      }
+    document.body.style.overflow = '';
 
-      return;
-    }
+    state.openProductId = null;
 
+  }
+
+  else{
+
+    $('#'+id)?.close();
+
+  }
+
+  return;
+}
   }
 );
 
