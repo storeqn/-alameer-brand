@@ -1000,7 +1000,7 @@ function openProduct(id){
 
     <div class="product-info">
 
-     <div class="section-kicker">
+    <div class="section-kicker detail-links">
 
   ${
     p.category
@@ -1012,12 +1012,6 @@ function openProduct(id){
       ${esc(p.category)}
     </button>
     `
-    : ''
-  }
-
-  ${
-    p.category && p.brand
-    ? `<span class="detail-separator">•</span>`
     : ''
   }
 
