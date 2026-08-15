@@ -185,61 +185,75 @@ function normalizeProduct(r, idx){
 
 async function loadProducts(){
 
-  if($('#loadingCard'))
-    $('#loadingCard').hidden=false;
+  // عرض المنتجات المحفوظة فورًا
+  let cached = [];
 
+  try{
+    cached = JSON.parse(
+      localStorage.getItem(C.cacheKey) || '[]'
+    );
+  }catch(e){
+    cached = [];
+  }
+
+  if(cached.length){
+    state.products = cached;
+
+    if($('#loadingCard'))
+      $('#loadingCard').hidden = true;
+
+    renderAll();
+  }else{
+    if($('#loadingCard'))
+      $('#loadingCard').hidden = false;
+  }
+
+  // بعدها تحديث المنتجات من Google Sheets
   try{
 
     const res = await fetch(C.sheetCsvUrl, {
-  cache: 'default'
-});
+      cache: 'default'
+    });
 
     if(!res.ok)
       throw new Error('sheet');
 
-    const text =
-      await res.text();
+    const text = await res.text();
 
-    const rows =
-      parseCSV(text)
+    const rows = parseCSV(text)
       .map(normalizeProduct)
-      .filter(p=>p.active);
+      .filter(p => p.active);
 
     if(!rows.length)
       throw new Error('empty');
 
-    state.products=rows;
+    state.products = rows;
 
     localStorage.setItem(
       C.cacheKey,
       JSON.stringify(rows)
     );
 
-  }
+    if($('#loadingCard'))
+      $('#loadingCard').hidden = true;
 
-  catch(e){
+    renderAll();
 
-    const cached =
-      JSON.parse(
-        localStorage.getItem(C.cacheKey) || '[]'
-      );
+  }catch(e){
 
-    state.products =
-      cached.length
-      ? cached
-      : demoProducts;
+    if(!cached.length){
 
-    if(!cached.length)
+      state.products = demoProducts;
+
+      if($('#loadingCard'))
+        $('#loadingCard').hidden = true;
+
+      renderAll();
+
       toast('تعذر تحميل المنتجات.');
-
+    }
   }
-
-  if($('#loadingCard'))
-    $('#loadingCard').hidden=true;
-
-  renderAll();
 }
-
 
 const demoProducts=[
   {
