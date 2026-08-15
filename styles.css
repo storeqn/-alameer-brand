@@ -1487,3 +1487,25 @@ body.cart-open{
   }
 }
 
+.detail-filter-link{
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:700;
+  padding:4px 6px;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.detail-filter-link:hover,
+.detail-filter-link:active{
+  text-decoration:underline;
+}
+
+.detail-separator{
+  margin:0 4px;
+  opacity:.55;
+}
+
