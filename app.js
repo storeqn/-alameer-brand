@@ -190,12 +190,9 @@ async function loadProducts(){
 
   try{
 
-    const res = await fetch(
-      `${C.sheetCsvUrl}${
-        C.sheetCsvUrl.includes('?') ? '&' : '?'
-      }_=${Date.now()}`,
-      {cache:'no-store'}
-    );
+    const res = await fetch(C.sheetCsvUrl, {
+  cache: 'default'
+});
 
     if(!res.ok)
       throw new Error('sheet');
