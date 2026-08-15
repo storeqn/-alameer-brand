@@ -379,6 +379,7 @@ function productCard(p){
         src="${esc(p.images[0])}"
         alt="${esc(p.name)}"
         loading="lazy"
+        decoding="async"
         onerror="this.src='assets/logo.png'">
 
       ${
