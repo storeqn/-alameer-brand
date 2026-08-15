@@ -1719,6 +1719,71 @@ if(detailCategory){
 
   storeView('products');
 
+  
+  document
+    .querySelector('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+
+const detailBrand =
+  e.target.closest(
+    '[data-detail-brand]'
+  );
+
+if(detailBrand){
+
+  state.brand =
+    detailBrand.dataset.detailBrand;
+
+  state.category = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+  document.body.style.overflow = '';
+  state.openProductId = null;
+
+  renderCategories();
+  renderProducts();
+
+  storeView('products');
+
+  document
+    .querySelector('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+
+    const detailCategory =
+  e.target.closest(
+    '[data-detail-category]'
+  );
+
+if(detailCategory){
+
+  state.category =
+    detailCategory.dataset.detailCategory;
+
+  state.brand = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+  document.body.style.overflow = '';
+  state.openProductId = null;
+
+  renderCategories();
+  renderProducts();
+
+  storeView('products');
+
   document
     .querySelector('#products')
     ?.scrollIntoView({
@@ -1761,7 +1826,6 @@ if(detailBrand){
 
   return;
 }
-    
 
     const th =
       e.target.closest(
