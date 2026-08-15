@@ -1509,3 +1509,33 @@ body.cart-open{
   opacity:.55;
 }
 
+
+/* أزرار القسم والبراند داخل تفاصيل المنتج */
+
+.detail-links{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.detail-filter-link{
+  border:1px solid #eadfcd;
+  background:#faf6ef;
+  color:#b7832f;
+  padding:8px 14px;
+  border-radius:999px;
+  font:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  transition:.2s;
+}
+
+.detail-filter-link:active{
+  transform:scale(.96);
+  background:#f3eadc;
+}
