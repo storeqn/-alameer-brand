@@ -363,7 +363,7 @@ function filtered(){
    PRODUCT CARD
 ========================= */
 
-function productCard(p){
+function productCard(p, index){
 
   const qty = cartQty(p.id);
 
@@ -375,13 +375,14 @@ function productCard(p){
       data-open-product="${esc(p.id)}">
 
       <img
-        class="product-image"
-        src="${esc(p.images[0])}"
-        alt="${esc(p.name)}"
-        loading="lazy"
-        decoding="async"
-        onerror="this.src='assets/logo.png'">
-
+  class="product-image"
+  src="${esc(p.images[0])}"
+  alt="${esc(p.name)}"
+  loading="${index < 4 ? 'eager' : 'lazy'}"
+  decoding="async"
+  fetchpriority="${index < 4 ? 'high' : 'low'}"
+  onerror="this.src='assets/logo.png'"
+>
       ${
         p.offer
         ? `<span class="offer-pill">
