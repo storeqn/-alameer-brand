@@ -580,7 +580,10 @@ function renderSubfilters(){
 
   const list = brands();
 
-  box.hidden=false;
+  const hasBrands = list.length > 0;
+
+  
+box.hidden=false;
 
   box.innerHTML=`
 
