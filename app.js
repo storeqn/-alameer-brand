@@ -828,62 +828,84 @@ function renderSubfilters(){
     }
 
 
-    <select
-      id="priceSort"
-      class="sort-select">
+    <div class="filter-selects">
 
+  <select
+    id="categorySelect"
+    class="sort-select">
+
+    <option
+      value="الكل"
+      ${
+        state.category === 'الكل'
+        ? 'selected'
+        : ''
+      }>
+      كل الأقسام
+    </option>
+
+    ${categories().map(c=>`
       <option
-        value="default"
+        value="${esc(c)}"
         ${
-          state.sort === 'default'
+          state.category === c
           ? 'selected'
           : ''
         }>
-
-        الترتيب الافتراضي
-
+        ${esc(c)}
       </option>
+    `).join('')}
+
+  </select>
 
 
-      <option
-        value="price-low"
-        ${
-          state.sort === 'price-low'
-          ? 'selected'
-          : ''
-        }>
+  <select
+    id="priceSort"
+    class="sort-select">
 
-        السعر: الأقل إلى الأعلى
+    <option
+      value="default"
+      ${
+        state.sort === 'default'
+        ? 'selected'
+        : ''
+      }>
+      الترتيب الافتراضي
+    </option>
 
-      </option>
+    <option
+      value="price-low"
+      ${
+        state.sort === 'price-low'
+        ? 'selected'
+        : ''
+      }>
+      السعر: الأقل إلى الأعلى
+    </option>
 
+    <option
+      value="price-high"
+      ${
+        state.sort === 'price-high'
+        ? 'selected'
+        : ''
+      }>
+      السعر: الأعلى إلى الأقل
+    </option>
 
-      <option
-        value="price-high"
-        ${
-          state.sort === 'price-high'
-          ? 'selected'
-          : ''
-        }>
+    <option
+      value="name"
+      ${
+        state.sort === 'name'
+        ? 'selected'
+        : ''
+      }>
+      حسب الاسم
+    </option>
 
-        السعر: الأعلى إلى الأقل
+  </select>
 
-      </option>
-
-
-      <option
-        value="name"
-        ${
-          state.sort === 'name'
-          ? 'selected'
-          : ''
-        }>
-
-        حسب الاسم
-
-      </option>
-
-    </select>
+</div>
   `;
 }
 
@@ -2382,16 +2404,27 @@ document.addEventListener(
   'change',
   e=>{
 
-    if(
-      e.target.id ===
-      'priceSort'
-    ){
+    // تغيير القسم
+    if(e.target.id === 'categorySelect'){
 
-      state.sort =
-        e.target.value;
+      state.category = e.target.value;
+      state.brand = 'الكل';
+      state.offersOnly = false;
+
+      renderCategories();
+      renderProducts();
+
+      return;
+    }
+
+    // تغيير الترتيب
+    if(e.target.id === 'priceSort'){
+
+      state.sort = e.target.value;
 
       renderProducts();
 
+      return;
     }
 
   }
