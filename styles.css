@@ -1784,3 +1784,94 @@ body.cart-open{
   }
 
 }
+
+/* =========================
+   OFFERS SLIDER - HOME ONLY
+========================= */
+
+#offers{
+  overflow:hidden;
+}
+
+#offersGrid{
+  display:flex !important;
+  gap:14px;
+  overflow-x:auto;
+  overflow-y:hidden;
+
+  padding:8px 4px 16px;
+
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+
+  scrollbar-width:none;
+}
+
+#offersGrid::-webkit-scrollbar{
+  display:none;
+}
+
+#offersGrid .product-card{
+  flex:0 0 72%;
+  max-width:280px;
+
+  scroll-snap-align:start;
+
+  border-radius:22px;
+  overflow:hidden;
+}
+
+#offersGrid .product-image-wrap{
+  aspect-ratio:1 / 1;
+}
+
+#offersGrid .product-image{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+#offersGrid .product-body{
+  padding:12px;
+}
+
+#offersGrid .product-title{
+  font-size:16px;
+  line-height:1.5;
+
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+#offersGrid .product-desc{
+  display:none;
+}
+
+#offersGrid .product-meta{
+  font-size:12px;
+}
+
+#offersGrid .price{
+  font-size:17px;
+}
+
+#offersGrid .product-actions{
+  gap:7px;
+}
+
+#offersGrid .add-btn,
+#offersGrid .details-btn{
+  padding:10px 8px;
+  font-size:14px;
+}
+
+@media(max-width:430px){
+
+  #offersGrid .product-card{
+    flex-basis:74%;
+  }
+
+}
+
