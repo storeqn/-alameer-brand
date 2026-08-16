@@ -1539,3 +1539,125 @@ body.cart-open{
   transform:scale(.96);
   background:#f3eadc;
 }
+
+
+/* =========================
+   NEW CATEGORIES PAGE
+========================= */
+
+#categoryGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:18px;
+  padding:14px 0 25px;
+}
+
+.category-card-new{
+  width:100%;
+  padding:0;
+  overflow:hidden;
+
+  background:#fff;
+  border:1px solid #eee4d3;
+  border-radius:28px;
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.06);
+
+  display:flex;
+  flex-direction:column;
+
+  text-align:center;
+  cursor:pointer;
+}
+
+/* مربع الصورة */
+
+.category-card-new .category-image-box{
+  width:100%;
+  aspect-ratio:1/1;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#f3c947;
+
+  overflow:hidden;
+}
+
+/* الأيقونة */
+
+.category-card-new .category-big-icon{
+  font-size:72px;
+  line-height:1;
+}
+
+/* معلومات القسم */
+
+.category-card-new .category-card-info{
+  width:100%;
+  padding:17px 10px 14px;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+
+  background:#fff;
+}
+
+.category-card-new .category-card-info strong{
+  font-size:18px;
+  font-weight:700;
+  color:#111;
+}
+
+.category-card-new .category-card-info small{
+  font-size:13px;
+  color:#aaa;
+}
+
+/* عرض التفاصيل */
+
+.category-card-new .category-details-btn{
+  width:100%;
+  padding:13px 8px;
+
+  border-top:1px solid #eee;
+
+  font-size:16px;
+  font-weight:700;
+
+  color:#8b7217;
+  background:#fff;
+}
+
+/* عند الضغط */
+
+.category-card-new:active{
+  transform:scale(.98);
+}
+
+
+/* الهاتف الصغير */
+
+@media(max-width:380px){
+
+  #categoryGrid{
+    gap:12px;
+  }
+
+  .category-card-new{
+    border-radius:22px;
+  }
+
+  .category-card-new .category-big-icon{
+    font-size:58px;
+  }
+
+  .category-card-new .category-card-info strong{
+    font-size:16px;
+  }
+}
+
