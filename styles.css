@@ -1668,3 +1668,21 @@ body.cart-open{
   object-fit:contain;
   display:block;
 }
+
+/* خلفية شعار الأقسام */
+
+.category-card-new .category-image-box{
+  background:#ffffff;
+  padding:22px;
+  border-bottom:1px solid #f1eadf;
+}
+
+.category-card-new .category-logo{
+  width:75%;
+  height:75%;
+  max-width:140px;
+  max-height:140px;
+  object-fit:contain;
+  display:block;
+  margin:auto;
+}
