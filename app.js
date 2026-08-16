@@ -667,79 +667,60 @@ function qtyControl(id,qty){
 
 function renderCategories(){
 
-  const cats =
-    categories();
+  const cats = categories();
 
-  $('#categoryGrid').innerHTML=`
+  $('#categoryGrid').innerHTML = cats.map((c,i)=>{
 
-    <button
-      class="category-card ${
-        state.category === 'الكل'
-        ? 'active'
-        : ''
-      }"
-      data-category="الكل">
+    const count =
+      state.products.filter(
+        p=>p.category === c
+      ).length;
 
-      <span class="category-icon">
-        ◉
-      </span>
+    const icons = [
+      '🧴',
+      '💄',
+      '🌸',
+      '☀️',
+      '🧖‍♀️',
+      '🧼',
+      '🪮',
+      '✨'
+    ];
 
-      <strong>
-        كل الأقسام
-      </strong>
+    const icon =
+      icons[i % icons.length];
 
-      <small>
-        ${state.products.length} منتج
-      </small>
-
-    </button>
-
-
-    ${cats.map((c,i)=>`
-
+    return `
       <button
-        class="category-card ${
-          state.category === c
-          ? 'active'
-          : ''
-        }"
+        class="category-card category-card-new"
         data-category="${esc(c)}">
 
-        <span class="category-icon">
+        <div class="category-image-box">
+          <span class="category-big-icon">
+            ${icon}
+          </span>
+        </div>
 
-          ${
-            [
-              '✦',
-              '◈',
-              '◇',
-              '✧',
-              '◆'
-            ][i%5]
-          }
+        <div class="category-card-info">
 
-        </span>
+          <strong>
+            ${esc(c)}
+          </strong>
 
-        <strong>
-          ${esc(c)}
-        </strong>
+          <small>
+            ${count} منتج
+          </small>
 
-        <small>
+        </div>
 
-          ${
-            state.products.filter(
-              p=>p.category===c
-            ).length
-          }
-
-          منتج
-
-        </small>
+        <div class="category-details-btn">
+          عرض التفاصيل
+        </div>
 
       </button>
+    `;
 
-    `).join('')}
-
-  `;
+  }).join('');
 }
 
 
