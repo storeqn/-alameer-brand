@@ -192,6 +192,9 @@ function normalizeProduct(r, idx){
 
     offer,
 
+    featured:
+  truthy(r.featured),
+    
     discount_note:
       norm(r.discount_note),
 
