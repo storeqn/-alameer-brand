@@ -665,84 +665,133 @@ function qtyControl(id,qty){
    CATEGORIES
 ========================= */
 
-function renderCategories(){
+function renderSubfilters(){
 
-  const cats =
-    categories();
+  const box = $('#subfilters');
 
-  $('#categoryGrid').innerHTML=`
+  if(!box) return;
 
-    <button
-      class="category-card ${
-        state.category === 'الكل'
-        ? 'active'
-        : ''
-      }"
-      data-category="الكل">
+  const list = brands();
 
-      <span class="category-icon">
-        ◉
-      </span>
+  box.hidden = false;
 
-      <strong>
-        كل الأقسام
-      </strong>
+  box.innerHTML = `
 
-      <small>
-        ${state.products.length} منتج
-      </small>
+    ${
+      list.length
+      ? `
+        <div class="brand-filter">
 
-    </button>
+          <button
+            class="chip ${
+              state.brand === 'الكل'
+              ? 'active'
+              : ''
+            }"
+            data-brand="الكل">
+
+            كل البراندات
+
+          </button>
+
+          ${list.map(b=>`
+
+            <button
+              class="chip ${
+                state.brand === b
+                ? 'active'
+                : ''
+              }"
+              data-brand="${esc(b)}">
+
+              ${esc(b)}
+
+            </button>
+
+          `).join('')}
+
+        </div>
+      `
+      : ''
+    }
 
 
-    ${cats.map((c,i)=>`
+    <div class="filter-selects">
 
-      <button
-        class="category-card ${
-          state.category === c
-          ? 'active'
-          : ''
-        }"
-        data-category="${esc(c)}">
+      <select
+        id="categorySelect"
+        class="sort-select">
 
-        <span class="category-icon">
-
+        <option
+          value="الكل"
           ${
-            [
-              '✦',
-              '◈',
-              '◇',
-              '✧',
-              '◆'
-            ][i%5]
-          }
+            state.category === 'الكل'
+            ? 'selected'
+            : ''
+          }>
+          كل الأقسام
+        </option>
 
-        </span>
+        ${categories().map(c=>`
+          <option
+            value="${esc(c)}"
+            ${
+              state.category === c
+              ? 'selected'
+              : ''
+            }>
+            ${esc(c)}
+          </option>
+        `).join('')}
 
-        <strong>
-          ${esc(c)}
-        </strong>
+      </select>
 
-        <small>
 
+      <select
+        id="priceSort"
+        class="sort-select">
+
+        <option value="default"
           ${
-            state.products.filter(
-              p=>p.category===c
-            ).length
-          }
+            state.sort === 'default'
+            ? 'selected'
+            : ''
+          }>
+          الترتيب الافتراضي
+        </option>
 
-          منتج
+        <option value="price-low"
+          ${
+            state.sort === 'price-low'
+            ? 'selected'
+            : ''
+          }>
+          السعر: الأقل إلى الأعلى
+        </option>
 
-        </small>
+        <option value="price-high"
+          ${
+            state.sort === 'price-high'
+            ? 'selected'
+            : ''
+          }>
+          السعر: الأعلى إلى الأقل
+        </option>
 
-      </button>
+        <option value="name"
+          ${
+            state.sort === 'name'
+            ? 'selected'
+            : ''
+          }>
+          حسب الاسم
+        </option>
 
-    `).join('')}
+      </select>
 
+    </div>
   `;
 }
-
-
 /* =========================
    OFFERS
 ========================= */
@@ -775,18 +824,15 @@ function renderOffers(){
 
 function renderSubfilters(){
 
-  const box =
-    $('#subfilters');
+  const box = $('#subfilters');
 
-  if(!box)
-    return;
+  if(!box) return;
 
-  const list =
-    brands();
+  const list = brands();
 
-  box.hidden=false;
+  box.hidden = false;
 
-  box.innerHTML=`
+  box.innerHTML = `
 
     ${
       list.length
@@ -804,7 +850,6 @@ function renderSubfilters(){
             كل البراندات
 
           </button>
-
 
           ${list.map(b=>`
 
@@ -828,65 +873,82 @@ function renderSubfilters(){
     }
 
 
-    <select
-      id="priceSort"
-      class="sort-select">
+    <div class="filter-selects">
 
-      <option
-        value="default"
-        ${
-          state.sort === 'default'
-          ? 'selected'
-          : ''
-        }>
+      <select
+        id="categorySelect"
+        class="sort-select">
 
-        الترتيب الافتراضي
+        <option
+          value="الكل"
+          ${
+            state.category === 'الكل'
+            ? 'selected'
+            : ''
+          }>
+          كل الأقسام
+        </option>
 
-      </option>
+        ${categories().map(c=>`
+          <option
+            value="${esc(c)}"
+            ${
+              state.category === c
+              ? 'selected'
+              : ''
+            }>
+            ${esc(c)}
+          </option>
+        `).join('')}
 
-
-      <option
-        value="price-low"
-        ${
-          state.sort === 'price-low'
-          ? 'selected'
-          : ''
-        }>
-
-        السعر: الأقل إلى الأعلى
-
-      </option>
-
-
-      <option
-        value="price-high"
-        ${
-          state.sort === 'price-high'
-          ? 'selected'
-          : ''
-        }>
-
-        السعر: الأعلى إلى الأقل
-
-      </option>
+      </select>
 
 
-      <option
-        value="name"
-        ${
-          state.sort === 'name'
-          ? 'selected'
-          : ''
-        }>
+      <select
+        id="priceSort"
+        class="sort-select">
 
-        حسب الاسم
+        <option value="default"
+          ${
+            state.sort === 'default'
+            ? 'selected'
+            : ''
+          }>
+          الترتيب 
+        </option>
 
-      </option>
+        <option value="price-low"
+          ${
+            state.sort === 'price-low'
+            ? 'selected'
+            : ''
+          }>
+          السعر: الأقل إلى الأعلى
+        </option>
 
-    </select>
+        <option value="price-high"
+          ${
+            state.sort === 'price-high'
+            ? 'selected'
+            : ''
+          }>
+          السعر: الأعلى إلى الأقل
+        </option>
+
+        <option value="name"
+          ${
+            state.sort === 'name'
+            ? 'selected'
+            : ''
+          }>
+          حسب الاسم
+        </option>
+
+      </select>
+
+    </div>
   `;
 }
-
 
 /* =========================
    PRODUCTS
@@ -2382,21 +2444,29 @@ document.addEventListener(
   'change',
   e=>{
 
-    if(
-      e.target.id ===
-      'priceSort'
-    ){
+    if(e.target.id === 'categorySelect'){
 
-      state.sort =
-        e.target.value;
+      state.category = e.target.value;
+      state.brand = 'الكل';
+      state.offersOnly = false;
+
+      renderCategories();
+      renderProducts();
+
+      return;
+    }
+
+    if(e.target.id === 'priceSort'){
+
+      state.sort = e.target.value;
 
       renderProducts();
 
+      return;
     }
 
   }
 );
-
 
 /* =========================
    PRODUCT MODAL CLOSE
