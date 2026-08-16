@@ -676,19 +676,7 @@ function renderCategories(){
         p=>p.category === c
       ).length;
 
-    const icons = [
-      '🧴',
-      '💄',
-      '🌸',
-      '☀️',
-      '🧖‍♀️',
-      '🧼',
-      '🪮',
-      '✨'
-    ];
-
-    const icon =
-      icons[i % icons.length];
+    
 
     return `
       <button
@@ -696,9 +684,11 @@ function renderCategories(){
         data-category="${esc(c)}">
 
         <div class="category-image-box">
-          <span class="category-big-icon">
-            ${icon}
-          </span>
+          <img
+  class="category-logo"
+  src="assets/logo.png"
+  alt="${esc(c)}"
+>
         </div>
 
         <div class="category-card-info">
