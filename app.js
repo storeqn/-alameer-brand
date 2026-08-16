@@ -1785,7 +1785,7 @@ function storeView(mode){
       offers.hidden=false;
 
     if(categories)
-      categories.hidden=false;
+  categories.hidden=true;
 
     if(products)
       products.hidden=false;
