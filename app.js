@@ -742,6 +742,26 @@ function renderOffers(){
     !!arr.length;
 }
 
+function renderFeatured(){
+
+  const box = $('#featuredGrid');
+  const empty = $('#featuredEmpty');
+
+  if(!box) return;
+
+  const arr =
+    state.products
+      .filter(p => p.featured)
+      .slice(0,8);
+
+  box.innerHTML =
+    arr.map(productCard).join('');
+
+  if(empty)
+    empty.hidden = !!arr.length;
+}
+
+
 
 /* =========================
    BRAND + SORT
@@ -943,8 +963,11 @@ function renderAll(){
 
   renderCategories();
   renderOffers();
+  renderFeatured();
   renderProducts();
   updateCartUI();
+
+}
 
 }
 
