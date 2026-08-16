@@ -1,7 +1,7 @@
 const C = window.STORE_CONFIG;
 
-const $ = (s, root=document) => root.querySelector(s);
-const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+const $ = (s, root = document) => root.querySelector(s);
+const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 
 const state = {
   products: [],
@@ -17,7 +17,8 @@ const state = {
 const money = v =>
   `${Number(v || 0).toLocaleString('ar-IQ')} ${C.currency}`;
 
-const norm = v => String(v ?? '').trim();
+const norm = v =>
+  String(v ?? '').trim();
 
 const truthy = v =>
   ['1','true','yes','y','نعم','عرض','offer']
@@ -44,54 +45,59 @@ const byId = id =>
 
 function parseCSV(text){
 
-  const rows=[];
-  let row=[];
-  let cell='';
-  let q=false;
+  const rows = [];
+
+  let row = [];
+  let cell = '';
+  let q = false;
 
   for(let i=0;i<text.length;i++){
 
-    const ch=text[i];
-    const nx=text[i+1];
+    const ch = text[i];
+    const nx = text[i+1];
 
-    if(ch==='"' && q && nx==='"'){
-      cell+='"';
+    if(ch === '"' && q && nx === '"'){
+      cell += '"';
       i++;
     }
 
-    else if(ch==='"'){
-      q=!q;
+    else if(ch === '"'){
+      q = !q;
     }
 
-    else if(ch===',' && !q){
+    else if(ch === ',' && !q){
       row.push(cell);
-      cell='';
+      cell = '';
     }
 
     else if(
-      (ch==='\n' || ch==='\r') &&
+      (ch === '\n' || ch === '\r') &&
       !q
     ){
 
-      if(ch==='\r' && nx==='\n')
+      if(
+        ch === '\r' &&
+        nx === '\n'
+      ){
         i++;
+      }
 
       row.push(cell);
-      cell='';
+      cell = '';
 
       if(
         row.some(
-          x=>x.trim()!==''
+          x => x.trim() !== ''
         )
       ){
         rows.push(row);
       }
 
-      row=[];
+      row = [];
     }
 
     else{
-      cell+=ch;
+      cell += ch;
     }
   }
 
@@ -99,7 +105,7 @@ function parseCSV(text){
 
   if(
     row.some(
-      x=>x.trim()!==''
+      x => x.trim() !== ''
     )
   ){
     rows.push(row);
@@ -112,24 +118,25 @@ function parseCSV(text){
     rows
       .shift()
       .map(
-        h=>h.trim().toLowerCase()
+        h => h.trim().toLowerCase()
       );
 
-  return rows.map(r =>
-    Object.fromEntries(
-      headers.map(
-        (h,i)=>[
-          h,
-          (r[i]??'').trim()
-        ]
+  return rows.map(
+    r =>
+      Object.fromEntries(
+        headers.map(
+          (h,i) => [
+            h,
+            (r[i] ?? '').trim()
+          ]
+        )
       )
-    )
   );
 }
 
 
 /* =========================
-   PRODUCT
+   NORMALIZE PRODUCT
 ========================= */
 
 function normalizeProduct(r, idx){
@@ -192,6 +199,9 @@ function normalizeProduct(r, idx){
 
     offer,
 
+    featured:
+      truthy(r.featured),
+
     discount_note:
       norm(r.discount_note),
 
@@ -231,12 +241,34 @@ function normalizeProduct(r, idx){
 
 
 /* =========================
+   DEMO
+========================= */
+
+const demoProducts = [
+  {
+    id:'demo1',
+    name:'منتج تجريبي',
+    price:0,
+    old_price:0,
+    offer:false,
+    featured:false,
+    discount_note:'',
+    images:['assets/logo.png'],
+    category:'أخرى',
+    brand:'',
+    desc:'منتج تجريبي.',
+    active:true
+  }
+];
+
+
+/* =========================
    LOAD PRODUCTS
 ========================= */
 
 async function loadProducts(){
 
-  let cached=[];
+  let cached = [];
 
   try{
 
@@ -247,28 +279,33 @@ async function loadProducts(){
         ) || '[]'
       );
 
-  }catch(e){
+  }
 
-    cached=[];
+  catch(e){
+
+    cached = [];
 
   }
 
 
   if(cached.length){
 
-    state.products=cached;
+    state.products =
+      cached;
 
     if($('#loadingCard'))
-      $('#loadingCard').hidden=true;
+      $('#loadingCard').hidden = true;
 
     renderAll();
+
+    storeView('home');
 
   }
 
   else{
 
     if($('#loadingCard'))
-      $('#loadingCard').hidden=false;
+      $('#loadingCard').hidden = false;
 
   }
 
@@ -293,13 +330,14 @@ async function loadProducts(){
       parseCSV(text)
         .map(normalizeProduct)
         .filter(
-          p=>p.active
+          p => p.active
         );
 
     if(!rows.length)
       throw new Error('empty');
 
-    state.products=rows;
+    state.products =
+      rows;
 
     localStorage.setItem(
       C.cacheKey,
@@ -307,9 +345,11 @@ async function loadProducts(){
     );
 
     if($('#loadingCard'))
-      $('#loadingCard').hidden=true;
+      $('#loadingCard').hidden = true;
 
     renderAll();
+
+    storeView('home');
 
   }
 
@@ -326,36 +366,18 @@ async function loadProducts(){
         demoProducts;
 
       if($('#loadingCard'))
-        $('#loadingCard').hidden=true;
+        $('#loadingCard').hidden = true;
 
       renderAll();
+
+      storeView('home');
 
       toast(
         'تعذر تحميل المنتجات.'
       );
-
     }
   }
 }
-
-
-const demoProducts=[
-  {
-    id:'demo1',
-    name:'منتج تجريبي',
-    price:0,
-    old_price:0,
-    offer:false,
-    discount_note:'',
-    images:[
-      'assets/logo.png'
-    ],
-    category:'أخرى',
-    brand:'',
-    desc:'منتج تجريبي.',
-    active:true
-  }
-];
 
 
 /* =========================
@@ -368,7 +390,7 @@ function categories(){
     ...new Set(
       state.products
         .map(
-          p=>p.category
+          p => p.category
         )
         .filter(Boolean)
     )
@@ -382,13 +404,12 @@ function brands(){
     ...new Set(
       state.products
         .map(
-          p=>p.brand
+          p => p.brand
         )
         .filter(Boolean)
     )
-  ]
-  .sort(
-    (a,b)=>
+  ].sort(
+    (a,b) =>
       a.localeCompare(
         b,
         'ar'
@@ -405,39 +426,40 @@ function filtered(){
       .trim();
 
   let arr =
-    state.products.filter(p=>{
+    state.products.filter(
+      p => {
 
-      const offerOk =
-        !state.offersOnly ||
-        p.offer;
+        const offerOk =
+          !state.offersOnly ||
+          p.offer;
 
-      const categoryOk =
-        state.category === 'الكل' ||
-        p.category === state.category;
+        const categoryOk =
+          state.category === 'الكل' ||
+          p.category === state.category;
 
-      const brandOk =
-        state.brand === 'الكل' ||
-        p.brand === state.brand;
+        const brandOk =
+          state.brand === 'الكل' ||
+          p.brand === state.brand;
 
-      const searchText = `
-        ${p.name || ''}
-        ${p.category || ''}
-        ${p.brand || ''}
-        ${p.desc || ''}
-      `.toLowerCase();
+        const searchText = `
+          ${p.name || ''}
+          ${p.category || ''}
+          ${p.brand || ''}
+          ${p.desc || ''}
+        `.toLowerCase();
 
-      const searchOk =
-        !q ||
-        searchText.includes(q);
+        const searchOk =
+          !q ||
+          searchText.includes(q);
 
-      return (
-        offerOk &&
-        categoryOk &&
-        brandOk &&
-        searchOk
-      );
-
-    });
+        return (
+          offerOk &&
+          categoryOk &&
+          brandOk &&
+          searchOk
+        );
+      }
+    );
 
 
   if(
@@ -446,9 +468,9 @@ function filtered(){
   ){
 
     arr.sort(
-      (a,b)=>
-        Number(a.price||0) -
-        Number(b.price||0)
+      (a,b) =>
+        Number(a.price || 0) -
+        Number(b.price || 0)
     );
 
   }
@@ -460,9 +482,9 @@ function filtered(){
   ){
 
     arr.sort(
-      (a,b)=>
-        Number(b.price||0) -
-        Number(a.price||0)
+      (a,b) =>
+        Number(b.price || 0) -
+        Number(a.price || 0)
     );
 
   }
@@ -474,7 +496,7 @@ function filtered(){
   ){
 
     arr.sort(
-      (a,b)=>
+      (a,b) =>
         a.name.localeCompare(
           b.name,
           'ar'
@@ -488,161 +510,28 @@ function filtered(){
 
 
 /* =========================
-   PRODUCT CARD
+   CART QTY
 ========================= */
 
-function productCard(p,index){
+function cartQty(id){
 
-  const qty =
-    cartQty(p.id);
-
-  return `
-  <article class="product-card">
-
-    <div
-      class="product-image-wrap"
-      data-open-product="${esc(p.id)}">
-
-      <img
-        class="product-image"
-        src="${esc(p.images[0])}"
-        alt="${esc(p.name)}"
-        loading="${index < 4 ? 'eager' : 'lazy'}"
-        decoding="async"
-        fetchpriority="${index < 4 ? 'high' : 'low'}"
-        onerror="this.onerror=null;this.src='assets/logo.png'"
-      >
-
-      ${
-        p.offer
-        ? `
-          <span class="offer-pill">
-            ${esc(
-              p.discount_note ||
-              'عرض'
-            )}
-          </span>
-        `
-        : ''
-      }
-
-      ${
-        p.images.length > 1
-        ? `
-          <span class="image-count">
-            📷 ${p.images.length}
-          </span>
-        `
-        : ''
-      }
-
-    </div>
-
-
-    <div class="product-body">
-
-      <div class="product-meta">
-
-        ${esc(
-          [
-            p.category,
-            p.brand
-          ]
-          .filter(Boolean)
-          .join(' • ')
-        )}
-
-      </div>
-
-
-      <h3
-        class="product-title"
-        data-open-product="${esc(p.id)}">
-
-        ${esc(p.name)}
-
-      </h3>
-
-
-      ${
-        p.desc
-        ? `
-          <p class="product-desc">
-            ${esc(p.desc)}
-          </p>
-        `
-        : ''
-      }
-
-
-      ${
-        p.price > 0
-        ? `
-          <div class="price-row">
-
-            <span class="price">
-              ${money(p.price)}
-            </span>
-
-            ${
-              p.old_price > p.price
-              ? `
-                <span class="old-price">
-                  ${money(p.old_price)}
-                </span>
-              `
-              : ''
-            }
-
-          </div>
-        `
-        : ''
-      }
-
-
-      <div class="product-actions">
-
-        ${
-          qty
-          ? qtyControl(
-              p.id,
-              qty
-            )
-          : `
-            <button
-              class="add-btn"
-              data-add="${esc(p.id)}">
-
-              أضف للسلة
-
-            </button>
-          `
-        }
-
-
-        <button
-          class="details-btn"
-          data-open-product="${esc(p.id)}">
-
-          التفاصيل
-
-        </button>
-
-      </div>
-
-    </div>
-
-  </article>
-  `;
+  return (
+    state.cart.find(
+      x =>
+        String(x.id) ===
+        String(id)
+    )?.qty || 0
+  );
 }
 
 
-function qtyControl(id,qty){
+function qtyControl(id, qty){
 
   return `
     <div class="qty-control">
 
       <button
+        type="button"
         data-dec="${esc(id)}">
         −
       </button>
@@ -652,6 +541,7 @@ function qtyControl(id,qty){
       </span>
 
       <button
+        type="button"
         data-inc="${esc(id)}">
         +
       </button>
@@ -662,175 +552,334 @@ function qtyControl(id,qty){
 
 
 /* =========================
-   CATEGORIES
+   PRODUCT CARD
 ========================= */
 
-function renderSubfilters(){
+function productCard(p, index = 99){
 
-  const box = $('#subfilters');
+  const qty =
+    cartQty(p.id);
 
-  if(!box) return;
+  return `
+    <article class="product-card">
 
-  const list = brands();
+      <div
+        class="product-image-wrap"
+        data-open-product="${esc(p.id)}">
 
-  box.hidden = false;
+        <img
+          class="product-image"
+          src="${esc(p.images[0])}"
+          alt="${esc(p.name)}"
+          loading="${
+            index < 4
+              ? 'eager'
+              : 'lazy'
+          }"
+          decoding="async"
+          fetchpriority="${
+            index < 4
+              ? 'high'
+              : 'low'
+          }"
+          onerror="this.onerror=null;this.src='assets/logo.png'"
+        >
 
-  box.innerHTML = `
+        ${
+          p.offer
+          ? `
+            <span class="offer-pill">
+              ${esc(
+                p.discount_note ||
+                'عرض'
+              )}
+            </span>
+          `
+          : ''
+        }
 
-    ${
-      list.length
-      ? `
-        <div class="brand-filter">
+        ${
+          p.images.length > 1
+          ? `
+            <span class="image-count">
+              📷 ${p.images.length}
+            </span>
+          `
+          : ''
+        }
+
+      </div>
+
+
+      <div class="product-body">
+
+        <div class="product-meta">
+
+          ${esc(
+            [
+              p.category,
+              p.brand
+            ]
+              .filter(Boolean)
+              .join(' • ')
+          )}
+
+        </div>
+
+
+        <h3
+          class="product-title"
+          data-open-product="${esc(p.id)}">
+
+          ${esc(p.name)}
+
+        </h3>
+
+
+        ${
+          p.desc
+          ? `
+            <p class="product-desc">
+              ${esc(p.desc)}
+            </p>
+          `
+          : ''
+        }
+
+
+        ${
+          p.price > 0
+          ? `
+            <div class="price-row">
+
+              <span class="price">
+                ${money(p.price)}
+              </span>
+
+              ${
+                p.old_price > p.price
+                ? `
+                  <span class="old-price">
+                    ${money(p.old_price)}
+                  </span>
+                `
+                : ''
+              }
+
+            </div>
+          `
+          : ''
+        }
+
+
+        <div class="product-actions">
+
+          ${
+            qty
+            ? qtyControl(
+                p.id,
+                qty
+              )
+            : `
+              <button
+                type="button"
+                class="add-btn"
+                data-add="${esc(p.id)}">
+
+                أضف للسلة
+
+              </button>
+            `
+          }
 
           <button
-            class="chip ${
-              state.brand === 'الكل'
-              ? 'active'
-              : ''
-            }"
-            data-brand="الكل">
+            type="button"
+            class="details-btn"
+            data-open-product="${esc(p.id)}">
 
-            كل البراندات
+            التفاصيل
 
           </button>
 
-          ${list.map(b=>`
-
-            <button
-              class="chip ${
-                state.brand === b
-                ? 'active'
-                : ''
-              }"
-              data-brand="${esc(b)}">
-
-              ${esc(b)}
-
-            </button>
-
-          `).join('')}
-
         </div>
-      `
-      : ''
-    }
 
+      </div>
 
-    <div class="filter-selects">
-
-      <select
-        id="categorySelect"
-        class="sort-select">
-
-        <option
-          value="الكل"
-          ${
-            state.category === 'الكل'
-            ? 'selected'
-            : ''
-          }>
-          كل الأقسام
-        </option>
-
-        ${categories().map(c=>`
-          <option
-            value="${esc(c)}"
-            ${
-              state.category === c
-              ? 'selected'
-              : ''
-            }>
-            ${esc(c)}
-          </option>
-        `).join('')}
-
-      </select>
-
-
-      <select
-        id="priceSort"
-        class="sort-select">
-
-        <option value="default"
-          ${
-            state.sort === 'default'
-            ? 'selected'
-            : ''
-          }>
-          الترتيب الافتراضي
-        </option>
-
-        <option value="price-low"
-          ${
-            state.sort === 'price-low'
-            ? 'selected'
-            : ''
-          }>
-          السعر: الأقل إلى الأعلى
-        </option>
-
-        <option value="price-high"
-          ${
-            state.sort === 'price-high'
-            ? 'selected'
-            : ''
-          }>
-          السعر: الأعلى إلى الأقل
-        </option>
-
-        <option value="name"
-          ${
-            state.sort === 'name'
-            ? 'selected'
-            : ''
-          }>
-          حسب الاسم
-        </option>
-
-      </select>
-
-    </div>
+    </article>
   `;
 }
+
+
+/* =========================
+   CATEGORIES
+========================= */
+
+function renderCategories(){
+
+  const grid =
+    $('#categoryGrid');
+
+  if(!grid)
+    return;
+
+  const cats =
+    categories();
+
+  grid.innerHTML =
+    cats.map(
+      c => {
+
+        const count =
+          state.products.filter(
+            p =>
+              p.category === c
+          ).length;
+
+        return `
+
+          <button
+            type="button"
+            class="category-card category-card-new"
+            data-category="${esc(c)}">
+
+            <div class="category-image-box">
+
+              <img
+                class="category-logo"
+                src="assets/logo.png"
+                alt="${esc(c)}"
+              >
+
+            </div>
+
+
+            <div class="category-card-info">
+
+              <strong>
+                ${esc(c)}
+              </strong>
+
+              <small>
+                ${count} منتج
+              </small>
+
+            </div>
+
+
+            <div class="category-details-btn">
+              عرض التفاصيل
+            </div>
+
+          </button>
+        `;
+
+      }
+    ).join('');
+}
+
+
 /* =========================
    OFFERS
 ========================= */
 
 function renderOffers(){
 
+  const grid =
+    $('#offersGrid');
+
+  if(!grid)
+    return;
+
   const arr =
     state.products
       .filter(
-        p=>p.offer
+        p => p.offer
       )
       .slice(
         0,
         8
       );
 
-  $('#offersGrid').innerHTML =
+  grid.innerHTML =
     arr
       .map(productCard)
       .join('');
 
-  $('#offersEmpty').hidden =
-    !!arr.length;
+  if($('#offersEmpty')){
+
+    $('#offersEmpty').hidden =
+      !!arr.length;
+
+  }
 }
 
 
 /* =========================
-   BRAND + SORT
+   FEATURED
+========================= */
+
+function renderFeatured(){
+
+  const grid =
+    $('#featuredGrid');
+
+  const empty =
+    $('#featuredEmpty');
+
+  const section =
+    $('#featured');
+
+  if(!grid)
+    return;
+
+  const arr =
+    state.products
+      .filter(
+        p => p.featured
+      )
+      .slice(
+        0,
+        8
+      );
+
+  grid.innerHTML =
+    arr
+      .map(productCard)
+      .join('');
+
+  if(empty){
+
+    empty.hidden =
+      !!arr.length;
+
+  }
+
+  if(section){
+
+    section.hidden =
+      !arr.length;
+
+  }
+}
+
+
+/* =========================
+   SUBFILTERS
 ========================= */
 
 function renderSubfilters(){
 
-  const box = $('#subfilters');
+  const box =
+    $('#subfilters');
 
-  if(!box) return;
+  if(!box)
+    return;
 
-  const list = brands();
+  const list =
+    brands();
 
-  box.hidden = false;
+  box.hidden =
+    false;
 
   box.innerHTML = `
 
@@ -840,10 +889,11 @@ function renderSubfilters(){
         <div class="brand-filter">
 
           <button
+            type="button"
             class="chip ${
               state.brand === 'الكل'
-              ? 'active'
-              : ''
+                ? 'active'
+                : ''
             }"
             data-brand="الكل">
 
@@ -851,21 +901,23 @@ function renderSubfilters(){
 
           </button>
 
-          ${list.map(b=>`
 
-            <button
-              class="chip ${
-                state.brand === b
-                ? 'active'
-                : ''
-              }"
-              data-brand="${esc(b)}">
+          ${list.map(
+            b => `
+              <button
+                type="button"
+                class="chip ${
+                  state.brand === b
+                    ? 'active'
+                    : ''
+                }"
+                data-brand="${esc(b)}">
 
-              ${esc(b)}
+                ${esc(b)}
 
-            </button>
-
-          `).join('')}
+              </button>
+            `
+          ).join('')}
 
         </div>
       `
@@ -883,23 +935,30 @@ function renderSubfilters(){
           value="الكل"
           ${
             state.category === 'الكل'
-            ? 'selected'
-            : ''
-          }>
-          كل الأقسام
-        </option>
-
-        ${categories().map(c=>`
-          <option
-            value="${esc(c)}"
-            ${
-              state.category === c
               ? 'selected'
               : ''
-            }>
-            ${esc(c)}
-          </option>
-        `).join('')}
+          }>
+
+          كل الأقسام
+
+        </option>
+
+
+        ${categories().map(
+          c => `
+            <option
+              value="${esc(c)}"
+              ${
+                state.category === c
+                  ? 'selected'
+                  : ''
+              }>
+
+              ${esc(c)}
+
+            </option>
+          `
+        ).join('')}
 
       </select>
 
@@ -908,40 +967,55 @@ function renderSubfilters(){
         id="priceSort"
         class="sort-select">
 
-        <option value="default"
+        <option
+          value="default"
           ${
             state.sort === 'default'
-            ? 'selected'
-            : ''
+              ? 'selected'
+              : ''
           }>
-          الترتيب 
+
+          الترتيب الافتراضي
+
         </option>
 
-        <option value="price-low"
+
+        <option
+          value="price-low"
           ${
             state.sort === 'price-low'
-            ? 'selected'
-            : ''
+              ? 'selected'
+              : ''
           }>
+
           السعر: الأقل إلى الأعلى
+
         </option>
 
-        <option value="price-high"
+
+        <option
+          value="price-high"
           ${
             state.sort === 'price-high'
-            ? 'selected'
-            : ''
+              ? 'selected'
+              : ''
           }>
+
           السعر: الأعلى إلى الأقل
+
         </option>
 
-        <option value="name"
+
+        <option
+          value="name"
           ${
             state.sort === 'name'
-            ? 'selected'
-            : ''
+              ? 'selected'
+              : ''
           }>
+
           حسب الاسم
+
         </option>
 
       </select>
@@ -949,6 +1023,7 @@ function renderSubfilters(){
     </div>
   `;
 }
+
 
 /* =========================
    PRODUCTS
@@ -956,22 +1031,40 @@ function renderSubfilters(){
 
 function renderProducts(){
 
+  const grid =
+    $('#productsGrid');
+
+  if(!grid)
+    return;
+
   const arr =
     filtered();
 
-  $('#productsGrid').innerHTML =
+  grid.innerHTML =
     arr
       .map(productCard)
       .join('');
 
-  $('#productsEmpty').hidden =
-    !!arr.length;
 
-  $('#productsCount').textContent =
-    `${arr.length} منتج`;
+  if($('#productsEmpty')){
+
+    $('#productsEmpty').hidden =
+      !!arr.length;
+
+  }
+
+
+  if($('#productsCount')){
+
+    $('#productsCount').textContent =
+      `${arr.length} منتج`;
+
+  }
+
 
   let title =
     'كل المنتجات';
+
 
   if(state.offersOnly){
 
@@ -998,39 +1091,40 @@ function renderProducts(){
 
   }
 
-  $('#productsTitle').textContent =
-    title;
+
+  if($('#productsTitle')){
+
+    $('#productsTitle').textContent =
+      title;
+
+  }
+
 
   renderSubfilters();
 }
 
 
+/* =========================
+   RENDER ALL
+========================= */
+
 function renderAll(){
 
   renderCategories();
-  renderOffers();
-  renderProducts();
-  updateCartUI();
 
+  renderOffers();
+
+  renderFeatured();
+
+  renderProducts();
+
+  updateCartUI();
 }
 
 
 /* =========================
    CART
 ========================= */
-
-function cartQty(id){
-
-  return (
-    state.cart.find(
-      x=>
-        String(x.id) ===
-        String(id)
-    )?.qty || 0
-  );
-
-}
-
 
 function saveCart(){
 
@@ -1047,20 +1141,23 @@ function saveCart(){
 
   renderOffers();
 
+  renderFeatured();
+
   if(
     $('#cartModal')?.open
   ){
-    renderCart();
-  }
 
+    renderCart();
+
+  }
 }
 
 
-function add(id,n=1){
+function add(id, n = 1){
 
   const x =
     state.cart.find(
-      i=>
+      i =>
         String(i.id) ===
         String(id)
     );
@@ -1080,13 +1177,16 @@ function add(id,n=1){
 
   }
 
+
   saveCart();
+
 
   const qty =
     cartQty(id);
 
   const detailQty =
     $('#detailQty');
+
 
   if(
     detailQty &&
@@ -1103,21 +1203,22 @@ function add(id,n=1){
 
   }
 
+
   toast(
     `تمت الإضافة للسلة • العدد ${qty}`
   );
-
 }
 
 
-function setQty(id,qty){
+function setQty(id, qty){
 
   const x =
     state.cart.find(
-      i=>
+      i =>
         String(i.id) ===
         String(id)
     );
+
 
   if(
     !x &&
@@ -1133,18 +1234,20 @@ function setQty(id,qty){
 
   else if(x){
 
-    x.qty=qty;
+    x.qty =
+      qty;
 
   }
 
 
   state.cart =
     state.cart.filter(
-      i=>i.qty>0
+      i =>
+        i.qty > 0
     );
 
-  saveCart();
 
+  saveCart();
 }
 
 
@@ -1152,15 +1255,17 @@ function cartData(){
 
   return state.cart
     .map(
-      x=>({
-        p:byId(x.id),
-        qty:x.qty
+      x => ({
+        p:
+          byId(x.id),
+
+        qty:
+          x.qty
       })
     )
     .filter(
-      x=>x.p
+      x => x.p
     );
-
 }
 
 
@@ -1168,24 +1273,26 @@ function updateCartUI(){
 
   const n =
     state.cart.reduce(
-      (s,x)=>s+x.qty,
+      (s,x) =>
+        s + x.qty,
       0
     );
 
+
   if($('#cartCount')){
 
-    $('#cartCount')
-      .textContent=n;
+    $('#cartCount').textContent =
+      n;
 
   }
+
 
   if($('#bottomCartCount')){
 
-    $('#bottomCartCount')
-      .textContent=n;
+    $('#bottomCartCount').textContent =
+      n;
 
   }
-
 }
 
 
@@ -1194,77 +1301,88 @@ function renderCart(){
   const items =
     cartData();
 
-  $('#cartItems').innerHTML =
+  const cartItems =
+    $('#cartItems');
+
+  if(!cartItems)
+    return;
+
+
+  cartItems.innerHTML =
 
     items.length
 
     ? items.map(
-      ({p,qty})=>`
+      ({p,qty}) => `
 
-      <div class="cart-item">
+        <div class="cart-item">
 
-        <img
-          src="${esc(p.images[0])}"
-          alt="${esc(p.name)}"
-          loading="lazy"
-          decoding="async"
-        >
+          <img
+            src="${esc(p.images[0])}"
+            alt="${esc(p.name)}"
+            loading="lazy"
+            decoding="async"
+          >
 
-        <div>
+          <div>
 
-          <h4>
-            ${esc(p.name)}
-          </h4>
+            <h4>
+              ${esc(p.name)}
+            </h4>
 
-          ${
-            p.price > 0
-            ? `
-              <p>
-                ${money(p.price)} × ${qty}
-              </p>
-            `
-            : ''
-          }
+            ${
+              p.price > 0
+              ? `
+                <p>
+                  ${money(p.price)} × ${qty}
+                </p>
+              `
+              : ''
+            }
 
-          ${qtyControl(
-            p.id,
-            qty
-          )}
+            ${qtyControl(
+              p.id,
+              qty
+            )}
+
+          </div>
+
+
+          <button
+            type="button"
+            class="remove-btn"
+            data-remove="${esc(p.id)}">
+
+            حذف
+
+          </button>
 
         </div>
-
-
-        <button
-          class="remove-btn"
-          data-remove="${esc(p.id)}">
-
-          حذف
-
-        </button>
-
-      </div>
-
-    `).join('')
+      `
+    ).join('')
 
     : `
-      <div class="empty-card">
-
-        السلة فارغة.
-
-      </div>
-    `;
+        <div class="empty-card">
+          السلة فارغة.
+        </div>
+      `;
 
 
-  $('#cartPieces').textContent =
-    items.reduce(
-      (s,x)=>s+x.qty,
-      0
-    );
+  if($('#cartPieces')){
+
+    $('#cartPieces').textContent =
+      items.reduce(
+        (s,x) =>
+          s + x.qty,
+        0
+      );
+
+  }
 
 
   const total =
     items.reduce(
-      (s,x)=>
+      (s,x) =>
         s +
         (
           x.p.price *
@@ -1274,8 +1392,12 @@ function renderCart(){
     );
 
 
-  $('#cartTotal').textContent =
-    money(total);
+  if($('#cartTotal')){
+
+    $('#cartTotal').textContent =
+      money(total);
+
+  }
 
 
   let clearTools =
@@ -1284,32 +1406,31 @@ function renderCart(){
 
   if(!clearTools){
 
-    $('#cartItems')
-      .insertAdjacentHTML(
-        'beforebegin',
-        `
-          <div
-            class="cart-tools"
-            id="cartClearTools">
+    cartItems.insertAdjacentHTML(
+      'beforebegin',
+      `
+        <div
+          class="cart-tools"
+          id="cartClearTools">
 
-            <button
-              type="button"
-              class="clear-cart-btn"
-              data-clear-cart>
+          <button
+            type="button"
+            class="clear-cart-btn"
+            data-clear-cart>
 
-              حذف السلة بالكامل
+            حذف السلة بالكامل
 
-            </button>
+          </button>
 
-          </div>
-        `
-      );
-
+        </div>
+      `
+    );
   }
 
 
   const clearBtn =
     $('[data-clear-cart]');
+
 
   if(clearBtn){
 
@@ -1317,7 +1438,6 @@ function renderCart(){
       !items.length;
 
   }
-
 }
 
 
@@ -1333,16 +1453,30 @@ function openProduct(id){
   if(!p)
     return;
 
-  state.openProductId=id;
+
+  state.openProductId =
+    id;
+
 
   const modal =
     $('#productModal');
+
+  const content =
+    $('#productModalContent');
+
+
+  if(
+    !modal ||
+    !content
+  )
+    return;
+
 
   document.body.style.overflow =
     'hidden';
 
 
-  $('#productModalContent').innerHTML=`
+  content.innerHTML = `
 
     <div class="product-detail">
 
@@ -1366,26 +1500,28 @@ function openProduct(id){
             <div class="thumbs">
 
               ${p.images.map(
-                (im,i)=>`
+                (im,i) => `
 
-                <button
-                  class="thumb ${
-                    i===0
-                    ? 'active'
-                    : ''
-                  }"
-                  data-thumb="${esc(im)}">
+                  <button
+                    type="button"
+                    class="thumb ${
+                      i === 0
+                        ? 'active'
+                        : ''
+                    }"
+                    data-thumb="${esc(im)}">
 
-                  <img
-                    src="${esc(im)}"
-                    alt="صورة ${i+1}"
-                    loading="lazy"
-                    decoding="async"
-                  >
+                    <img
+                      src="${esc(im)}"
+                      alt="صورة ${i+1}"
+                      loading="lazy"
+                      decoding="async"
+                    >
 
-                </button>
+                  </button>
 
-              `).join('')}
+                `
+              ).join('')}
 
             </div>
           `
@@ -1398,7 +1534,9 @@ function openProduct(id){
       <div class="product-info">
 
 
-        <div class="section-kicker detail-links">
+        <div
+          class="section-kicker detail-links">
+
 
           ${
             p.category
@@ -1492,6 +1630,7 @@ function openProduct(id){
 
 
           <button
+            type="button"
             class="add-btn"
             data-add="${esc(p.id)}">
 
@@ -1507,92 +1646,118 @@ function openProduct(id){
   `;
 
 
-  modal.showModal();
+  if(!modal.open){
 
+    modal.showModal();
+
+  }
 }
 
-
-/* =========================
-   CLOSE PRODUCT
-========================= */
 
 function closeProduct(){
 
-  if(
-    $('#productModal')?.open
-  ){
+  const modal =
+    $('#productModal');
 
-    $('#productModal')
-      .close();
+
+  if(modal?.open){
+
+    modal.close();
 
   }
 
-  document.body.style.overflow='';
 
-  state.openProductId=null;
+  document.body.style.overflow =
+    '';
 
+
+  state.openProductId =
+    null;
 }
 
 
 /* =========================
-   OPEN / CLOSE CART
+   CART MODAL
 ========================= */
 
-let cartScrollY=0;
+let cartScrollY =
+  0;
 
 
 function openCart(){
 
   renderCart();
 
+
   cartScrollY =
-    window.scrollY || 0;
+    window.scrollY ||
+    0;
+
 
   document.body.classList.add(
     'cart-open'
   );
 
+
   document.body.style.top =
     `-${cartScrollY}px`;
 
-  $('#cartModal').showModal();
+
+  const modal =
+    $('#cartModal');
 
 
-  setTimeout(()=>{
+  if(
+    modal &&
+    !modal.open
+  ){
 
-    const first =
-      $('#cartModal input');
+    modal.showModal();
 
-    if(first)
-      first.blur();
+  }
 
-  },50);
 
+  setTimeout(
+    () => {
+
+      const first =
+        $('#cartModal input');
+
+      if(first)
+        first.blur();
+
+    },
+    50
+  );
 }
 
 
 function closeCart(){
 
-  if(
-    $('#cartModal')?.open
-  ){
+  const modal =
+    $('#cartModal');
 
-    $('#cartModal')
-      .close();
+
+  if(modal?.open){
+
+    modal.close();
 
   }
+
 
   document.body.classList.remove(
     'cart-open'
   );
 
-  document.body.style.top='';
+
+  document.body.style.top =
+    '';
+
 
   window.scrollTo(
     0,
     cartScrollY
   );
-
 }
 
 
@@ -1604,8 +1769,10 @@ function checkout(e){
 
   e.preventDefault();
 
+
   const items =
     cartData();
+
 
   if(!items.length){
 
@@ -1625,14 +1792,13 @@ function checkout(e){
 
   const beforeDiscount =
     items.reduce(
-      (sum,x)=>{
+      (sum,x) => {
 
         const unit =
           x.p.old_price >
           x.p.price
 
           ? x.p.old_price
-
           : x.p.price;
 
         return (
@@ -1647,7 +1813,7 @@ function checkout(e){
 
   const afterDiscount =
     items.reduce(
-      (sum,x)=>
+      (sum,x) =>
         sum +
         (
           x.p.price *
@@ -1666,8 +1832,8 @@ function checkout(e){
 
 
   const num =
-    n=>
-      Number(n||0)
+    n =>
+      Number(n || 0)
         .toLocaleString(
           'en-US'
         );
@@ -1675,13 +1841,11 @@ function checkout(e){
 
   const productsText =
     items.map(
-      (x,i)=>
-
+      (x,i) =>
         `${i+1}) ${x.p.name}` +
         ` | عدد: ${x.qty}` +
         ` | سعر: ${num(x.p.price)}` +
         ` | مجموع: ${num(x.p.price*x.qty)}`
-
     ).join('\n');
 
 
@@ -1742,7 +1906,6 @@ ${productsText}
     '_blank',
     'noopener'
   );
-
 }
 
 
@@ -1755,29 +1918,33 @@ function toast(msg){
   const t =
     $('#toast');
 
+
   if(!t)
     return;
 
+
   t.textContent =
     msg;
+
 
   t.classList.add(
     'show'
   );
 
+
   clearTimeout(
     t._x
   );
 
+
   t._x =
     setTimeout(
-      ()=>
+      () =>
         t.classList.remove(
           'show'
         ),
       2200
     );
-
 }
 
 
@@ -1785,7 +1952,7 @@ function toast(msg){
    DRAWER
 ========================= */
 
-function openDrawer(v=true){
+function openDrawer(v = true){
 
   $('#drawer')
     ?.classList
@@ -1794,139 +1961,175 @@ function openDrawer(v=true){
       v
     );
 
+
   $('#drawer')
     ?.setAttribute(
       'aria-hidden',
       String(!v)
     );
-
 }
 
 
 /* =========================
-   VIEW
+   STORE VIEW
 ========================= */
 
 function storeView(mode){
 
   const hero =
-    document.querySelector(
-      '.hero'
-    );
+    $('.hero');
 
   const toolbar =
-    document.querySelector(
-      '.toolbar'
-    );
+    $('.toolbar');
 
   const offers =
-    document.querySelector(
-      '#offers'
-    );
+    $('#offers');
 
-  const categories =
-    document.querySelector(
-      '#categories'
-    );
+  const featured =
+    $('#featured');
+
+  const categoriesSection =
+    $('#categories');
 
   const products =
-    document.querySelector(
-      '#products'
-    );
+    $('#products');
 
 
-  if(mode==='home'){
-
-    if(hero)
-      hero.hidden=false;
-
-    if(toolbar)
-      toolbar.hidden=false;
-
-    if(offers)
-      offers.hidden=false;
-
-    if(categories)
-  categories.hidden=true;
-
-    if(products)
-      products.hidden=false;
-
-  }
-
-
-  if(mode==='categories'){
+  if(
+    mode ===
+    'home'
+  ){
 
     if(hero)
-      hero.hidden=true;
+      hero.hidden = false;
 
     if(toolbar)
-      toolbar.hidden=true;
+      toolbar.hidden = false;
 
     if(offers)
-      offers.hidden=true;
+      offers.hidden = false;
 
-    if(categories)
-      categories.hidden=false;
+
+    if(featured){
+
+      featured.hidden =
+        !state.products.some(
+          p => p.featured
+        );
+
+    }
+
+
+    if(categoriesSection)
+      categoriesSection.hidden = true;
+
 
     if(products)
-      products.hidden=true;
+      products.hidden = false;
 
   }
 
 
-  if(mode==='products'){
+  if(
+    mode ===
+    'categories'
+  ){
 
     if(hero)
-      hero.hidden=true;
-
-    if(offers)
-      offers.hidden=true;
+      hero.hidden = true;
 
     if(toolbar)
-      toolbar.hidden=false;
+      toolbar.hidden = true;
 
-    if(categories)
-      categories.hidden=true;
+    if(offers)
+      offers.hidden = true;
+
+    if(featured)
+      featured.hidden = true;
+
+    if(categoriesSection)
+      categoriesSection.hidden = false;
 
     if(products)
-      products.hidden=false;
+      products.hidden = true;
 
   }
 
-}
 
+  if(
+    mode ===
+    'products'
+  ){
 
-function resetStoreFilters(){
+    if(hero)
+      hero.hidden = true;
 
-  state.category='الكل';
-  state.brand='الكل';
-  state.offersOnly=false;
-  state.search='';
-  state.sort='default';
+    if(toolbar)
+      toolbar.hidden = false;
 
-  if($('#searchInput')){
+    if(offers)
+      offers.hidden = true;
 
-    $('#searchInput')
-      .value='';
+    if(featured)
+      featured.hidden = true;
+
+    if(categoriesSection)
+      categoriesSection.hidden = true;
+
+    if(products)
+      products.hidden = false;
 
   }
-
-  renderCategories();
-
-  renderProducts();
-
 }
 
 
 /* =========================
-   BUTTON EVENTS
+   RESET
+========================= */
+
+function resetStoreFilters(){
+
+  state.category =
+    'الكل';
+
+  state.brand =
+    'الكل';
+
+  state.offersOnly =
+    false;
+
+  state.search =
+    '';
+
+  state.sort =
+    'default';
+
+
+  if($('#searchInput')){
+
+    $('#searchInput').value =
+      '';
+
+  }
+
+
+  renderCategories();
+
+  renderProducts();
+}
+
+
+/* =========================
+   BASIC BUTTONS
 ========================= */
 
 if($('#menuBtn')){
 
   $('#menuBtn').onclick =
-    ()=>openDrawer(true);
+    () =>
+      openDrawer(
+        true
+      );
 
 }
 
@@ -1934,7 +2137,10 @@ if($('#menuBtn')){
 if($('#closeMenuBtn')){
 
   $('#closeMenuBtn').onclick =
-    ()=>openDrawer(false);
+    () =>
+      openDrawer(
+        false
+      );
 
 }
 
@@ -1942,16 +2148,22 @@ if($('#closeMenuBtn')){
 if($('#drawerBackdrop')){
 
   $('#drawerBackdrop').onclick =
-    ()=>openDrawer(false);
+    () =>
+      openDrawer(
+        false
+      );
 
 }
 
 
 $$('.drawer-nav a')
   .forEach(
-    a=>
-      a.onclick=
-        ()=>openDrawer(false)
+    a =>
+      a.onclick =
+        () =>
+          openDrawer(
+            false
+          )
   );
 
 
@@ -1979,12 +2191,16 @@ if($('#checkoutForm')){
 }
 
 
+/* =========================
+   SEARCH
+========================= */
+
 if($('#searchInput')){
 
   $('#searchInput')
     .addEventListener(
       'input',
-      e=>{
+      e => {
 
         state.search =
           e.target.value;
@@ -1993,24 +2209,32 @@ if($('#searchInput')){
 
       }
     );
-
 }
 
+
+/* =========================
+   SHOW ALL
+========================= */
 
 if($('#showAllBtn')){
 
   $('#showAllBtn').onclick =
-    ()=>{
+    () => {
 
       resetStoreFilters();
 
-      storeView('home');
+      storeView(
+        'products'
+      );
 
-      location.hash =
-        'products';
+
+      $('#products')
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
 
     };
-
 }
 
 
@@ -2020,7 +2244,7 @@ if($('#showAllBtn')){
 
 document.addEventListener(
   'click',
-  e=>{
+  e => {
 
 
     const addBtn =
@@ -2035,7 +2259,6 @@ document.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2054,7 +2277,6 @@ document.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2073,7 +2295,6 @@ document.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2090,7 +2311,6 @@ document.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2101,11 +2321,10 @@ document.addEventListener(
 
     if(clearCart){
 
-      if(
-        state.cart.length
-      ){
+      if(state.cart.length){
 
-        state.cart=[];
+        state.cart =
+          [];
 
         saveCart();
 
@@ -2118,7 +2337,6 @@ document.addEventListener(
       }
 
       return;
-
     }
 
 
@@ -2134,7 +2352,6 @@ document.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2149,7 +2366,10 @@ document.addEventListener(
 
       resetStoreFilters();
 
-      storeView('home');
+      storeView(
+        'home'
+      );
+
 
       window.scrollTo({
         top:0,
@@ -2157,7 +2377,6 @@ document.addEventListener(
       });
 
       return;
-
     }
 
 
@@ -2170,27 +2389,31 @@ document.addEventListener(
 
       e.preventDefault();
 
-      state.category='الكل';
-      state.brand='الكل';
-      state.offersOnly=false;
+      state.category =
+        'الكل';
+
+      state.brand =
+        'الكل';
+
+      state.offersOnly =
+        false;
+
 
       renderCategories();
+
 
       storeView(
         'categories'
       );
 
-      document
-        .querySelector(
-          '#categories'
-        )
+
+      $('#categories')
         ?.scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
 
       return;
-
     }
 
 
@@ -2204,9 +2427,12 @@ document.addEventListener(
       state.category =
         cat.dataset.category;
 
-      state.brand='الكل';
+      state.brand =
+        'الكل';
 
-      state.offersOnly=false;
+      state.offersOnly =
+        false;
+
 
       renderCategories();
 
@@ -2216,17 +2442,14 @@ document.addEventListener(
         'products'
       );
 
-      document
-        .querySelector(
-          '#products'
-        )
+
+      $('#products')
         ?.scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
 
       return;
-
     }
 
 
@@ -2240,29 +2463,32 @@ document.addEventListener(
       state.brand =
         brand.dataset.brand;
 
-      state.offersOnly=false;
+      state.offersOnly =
+        false;
+
 
       renderProducts();
 
       return;
-
     }
 
 
-    const offers =
+    const offersBtn =
       e.target.closest(
         '[data-filter-offers]'
       );
 
-    if(offers){
+    if(offersBtn){
 
-      state.offersOnly=true;
+      state.offersOnly =
+        true;
 
-      state.category='الكل';
+      state.category =
+        'الكل';
 
-      state.brand='الكل';
+      state.brand =
+        'الكل';
 
-      renderCategories();
 
       renderProducts();
 
@@ -2270,12 +2496,16 @@ document.addEventListener(
         'products'
       );
 
-      return;
 
+      $('#products')
+        ?.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
+
+      return;
     }
 
-
-    /* القسم من تفاصيل المنتج */
 
     const detailCategory =
       e.target.closest(
@@ -2289,9 +2519,12 @@ document.addEventListener(
           .dataset
           .detailCategory;
 
-      state.brand='الكل';
+      state.brand =
+        'الكل';
 
-      state.offersOnly=false;
+      state.offersOnly =
+        false;
+
 
       closeProduct();
 
@@ -2303,21 +2536,16 @@ document.addEventListener(
         'products'
       );
 
-      document
-        .querySelector(
-          '#products'
-        )
+
+      $('#products')
         ?.scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
 
       return;
-
     }
 
-
-    /* البراند من تفاصيل المنتج */
 
     const detailBrand =
       e.target.closest(
@@ -2331,9 +2559,12 @@ document.addEventListener(
           .dataset
           .detailBrand;
 
-      state.category='الكل';
+      state.category =
+        'الكل';
 
-      state.offersOnly=false;
+      state.offersOnly =
+        false;
+
 
       closeProduct();
 
@@ -2345,17 +2576,14 @@ document.addEventListener(
         'products'
       );
 
-      document
-        .querySelector(
-          '#products'
-        )
+
+      $('#products')
         ?.scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
 
       return;
-
     }
 
 
@@ -2369,6 +2597,7 @@ document.addEventListener(
       const main =
         $('#galleryMain');
 
+
       if(main){
 
         main.src =
@@ -2379,15 +2608,14 @@ document.addEventListener(
 
       $$('.thumb')
         .forEach(
-          x=>
+          x =>
             x.classList.toggle(
               'active',
-              x===th
+              x === th
             )
         );
 
       return;
-
     }
 
 
@@ -2423,13 +2651,12 @@ document.addEventListener(
 
       else{
 
-        $('#'+id)
+        $('#' + id)
           ?.close();
 
       }
 
       return;
-
     }
 
   }
@@ -2437,28 +2664,45 @@ document.addEventListener(
 
 
 /* =========================
-   SORT
+   SELECT CHANGE
 ========================= */
 
 document.addEventListener(
   'change',
-  e=>{
+  e => {
 
-    if(e.target.id === 'categorySelect'){
 
-      state.category = e.target.value;
-      state.brand = 'الكل';
-      state.offersOnly = false;
+    if(
+      e.target.id ===
+      'categorySelect'
+    ){
+
+      state.category =
+        e.target.value;
+
+      state.brand =
+        'الكل';
+
+      state.offersOnly =
+        false;
+
 
       renderCategories();
+
       renderProducts();
 
       return;
     }
 
-    if(e.target.id === 'priceSort'){
 
-      state.sort = e.target.value;
+    if(
+      e.target.id ===
+      'priceSort'
+    ){
+
+      state.sort =
+        e.target.value;
+
 
       renderProducts();
 
@@ -2468,33 +2712,30 @@ document.addEventListener(
   }
 );
 
+
 /* =========================
-   PRODUCT MODAL CLOSE
+   MODAL CLOSE
 ========================= */
 
 $('#productModal')
   ?.addEventListener(
     'close',
-    ()=>{
+    () => {
 
-      document.body
-        .style
-        .overflow='';
+      document.body.style.overflow =
+        '';
 
-      state.openProductId=null;
+      state.openProductId =
+        null;
 
     }
   );
 
 
-/* =========================
-   CART CLOSE
-========================= */
-
 $('#cartModal')
   ?.addEventListener(
     'close',
-    ()=>{
+    () => {
 
       if(
         document.body
@@ -2504,15 +2745,12 @@ $('#cartModal')
           )
       ){
 
-        document.body
-          .classList
-          .remove(
-            'cart-open'
-          );
+        document.body.classList.remove(
+          'cart-open'
+        );
 
-        document.body
-          .style
-          .top='';
+        document.body.style.top =
+          '';
 
         window.scrollTo(
           0,
@@ -2531,12 +2769,12 @@ $('#cartModal')
 
 window.addEventListener(
   'online',
-  ()=>{
+  () => {
 
     if($('#offlineBar')){
 
-      $('#offlineBar')
-        .hidden=true;
+      $('#offlineBar').hidden =
+        true;
 
     }
 
@@ -2546,12 +2784,12 @@ window.addEventListener(
 
 window.addEventListener(
   'offline',
-  ()=>{
+  () => {
 
     if($('#offlineBar')){
 
-      $('#offlineBar')
-        .hidden=false;
+      $('#offlineBar').hidden =
+        false;
 
     }
 
@@ -2566,6 +2804,10 @@ if($('#offlineBar')){
 
 }
 
+
+/* =========================
+   YEAR
+========================= */
 
 if($('#year')){
 
@@ -2587,17 +2829,19 @@ if(
 
   window.addEventListener(
     'load',
-    ()=>
+    () => {
+
       navigator
         .serviceWorker
         .register(
           './sw.js'
         )
         .catch(
-          ()=>{}
-        )
-  );
+          () => {}
+        );
 
+    }
+  );
 }
 
 
