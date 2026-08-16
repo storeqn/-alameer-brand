@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
 
 <meta charset="UTF-8">
@@ -9,538 +10,1077 @@
   content="width=device-width, initial-scale=1, viewport-fit=cover"
 >
 
+<!-- إعدادات خاصة بتطبيق إدارة المنتجات على iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta
+  name="apple-mobile-web-app-status-bar-style"
+  content="default"
+>
+
+<meta
+  name="apple-mobile-web-app-title"
+  content="إدارة المنتجات"
+>
+
 <meta name="theme-color" content="#f7f4ed">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-<meta name="apple-mobile-web-app-title" content="إدارة المنتجات">
-
+<!-- أيقونة إدارة المنتجات فقط -->
 <link
   rel="apple-touch-icon"
   sizes="180x180"
-  href="assets/icon-180x180.png?v=2"
->
-
-<link
-  rel="manifest"
-  href="manifest.webmanifest"
+  href="assets/icon-180x180.png?v=10"
 >
 
 <title>إدارة المنتجات | الأمير براند</title>
-  
+
+
 <style>
+
 *{
   box-sizing:border-box;
 }
 
+html{
+  -webkit-text-size-adjust:100%;
+}
+
 body{
   margin:0;
+
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+
   background:#f7f4ed;
+
   color:#171512;
-  font-family:Tahoma,Arial,sans-serif;
+
+  font-family:
+    Tahoma,
+    Arial,
+    sans-serif;
 }
+
 
 .container{
-  width:min(700px,calc(100% - 24px));
+
+  width:min(
+    700px,
+    calc(100% - 24px)
+  );
+
   margin:25px auto 50px;
+
 }
+
 
 .header{
+
   text-align:center;
+
   margin-bottom:22px;
+
 }
+
 
 .header h1{
+
   margin:0 0 7px;
+
   font-size:27px;
+
 }
+
 
 .header p{
+
   margin:0;
+
   color:#777;
+
   font-size:14px;
+
 }
+
 
 .card{
+
   background:#fff;
+
   border-radius:22px;
+
   padding:22px;
-  box-shadow:0 12px 35px rgba(0,0,0,.07);
+
+  box-shadow:
+    0 12px 35px
+    rgba(0,0,0,.07);
+
 }
+
 
 .field{
+
   margin-bottom:17px;
+
 }
 
+
 label{
+
   display:block;
+
   margin-bottom:7px;
+
   font-weight:bold;
+
   font-size:14px;
+
 }
+
 
 input,
 textarea{
+
   width:100%;
-  border:1px solid #e1ddd5;
+
+  border:
+    1px solid
+    #e1ddd5;
+
   background:#fff;
+
   border-radius:13px;
+
   padding:13px 14px;
+
   font-size:16px;
+
   font-family:inherit;
+
   outline:none;
+
 }
+
 
 input:focus,
 textarea:focus{
+
   border-color:#b68b3d;
+
 }
+
 
 textarea{
+
   min-height:110px;
+
   resize:vertical;
+
 }
+
 
 .row{
+
   display:grid;
-  grid-template-columns:1fr 1fr;
+
+  grid-template-columns:
+    1fr 1fr;
+
   gap:12px;
+
 }
+
 
 .checks{
+
   display:grid;
-  grid-template-columns:1fr 1fr;
+
+  grid-template-columns:
+    1fr 1fr;
+
   gap:12px;
+
   margin-bottom:18px;
+
 }
+
 
 .checkBox{
+
   display:flex;
+
   align-items:center;
+
   gap:9px;
+
   padding:13px;
-  border:1px solid #eee6d8;
+
+  border:
+    1px solid
+    #eee6d8;
+
   background:#faf8f4;
+
   border-radius:13px;
+
   cursor:pointer;
+
 }
+
 
 .checkBox input{
+
   width:20px;
+
   height:20px;
+
 }
+
 
 .preview{
+
   display:none;
+
   width:130px;
+
   height:130px;
+
   object-fit:contain;
+
   margin-top:10px;
+
   background:#f7f7f7;
+
   border-radius:14px;
-  border:1px solid #eee;
+
+  border:
+    1px solid
+    #eee;
+
 }
+
 
 small{
+
   display:block;
+
   margin-top:6px;
+
   color:#888;
+
   line-height:1.6;
+
 }
+
 
 button{
+
   width:100%;
+
   border:0;
+
   border-radius:14px;
+
   padding:15px;
+
   background:#11100e;
+
   color:white;
+
   font-size:17px;
+
   font-weight:bold;
+
   font-family:inherit;
+
   cursor:pointer;
+
 }
+
 
 button:disabled{
+
   opacity:.55;
+
 }
+
 
 .status{
+
   display:none;
+
   margin-top:16px;
+
   padding:13px;
+
   border-radius:13px;
+
   text-align:center;
+
   font-weight:bold;
+
 }
+
 
 .status.success{
+
   display:block;
+
   background:#e7f8ed;
+
   color:#16743a;
+
 }
+
 
 .status.error{
+
   display:block;
+
   background:#ffebeb;
+
   color:#b42318;
+
 }
+
 
 @media(max-width:550px){
+
   .container{
+
     margin-top:15px;
+
   }
+
 
   .card{
+
     padding:17px;
+
   }
+
 
   .row{
+
     grid-template-columns:1fr;
+
   }
 
+
   .header h1{
+
     font-size:22px;
+
   }
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
 
+
   <div class="header">
-    <h1>إدارة منتجات الأمير براند</h1>
-    <p>إضافة منتج جديد إلى المتجر</p>
+
+    <h1>
+      إدارة منتجات الأمير براند
+    </h1>
+
+    <p>
+      إضافة منتج جديد إلى المتجر
+    </p>
+
   </div>
+
+
 
   <div class="card">
 
+
     <form id="productForm">
 
+
+      <!-- اسم المنتج -->
+
       <div class="field">
-        <label>اسم المنتج *</label>
+
+        <label>
+          اسم المنتج *
+        </label>
+
         <input
           id="name"
           type="text"
           required
-          placeholder="مثال: غسول SKIN1004">
+          placeholder="مثال: غسول SKIN1004"
+        >
+
       </div>
 
 
+
+      <!-- الأسعار -->
+
       <div class="row">
 
+
         <div class="field">
-          <label>السعر *</label>
+
+          <label>
+            السعر *
+          </label>
+
           <input
             id="price"
             type="number"
             min="0"
             required
-            placeholder="15000">
+            placeholder="15000"
+          >
+
         </div>
 
+
+
         <div class="field">
-          <label>السعر القديم</label>
+
+          <label>
+            السعر القديم
+          </label>
+
           <input
             id="old_price"
             type="number"
             min="0"
-            placeholder="18000">
+            placeholder="18000"
+          >
+
         </div>
+
 
       </div>
 
 
+
+      <!-- القسم والبراند -->
+
       <div class="row">
 
+
         <div class="field">
-          <label>القسم *</label>
+
+          <label>
+            القسم *
+          </label>
 
           <input
             id="category"
             type="text"
             list="categories"
             required
-            placeholder="اختر أو اكتب القسم">
+            placeholder="اختر أو اكتب القسم"
+          >
+
 
           <datalist id="categories">
+
             <option value="العناية بالبشرة">
+
             <option value="غسولات">
+
             <option value="فرش مكياج">
+
             <option value="مكياج">
+
             <option value="عطور">
+
             <option value="لوشن جسم">
+
             <option value="العناية بالشعر">
+
           </datalist>
+
+
         </div>
 
 
+
         <div class="field">
-          <label>البراند</label>
+
+          <label>
+            البراند
+          </label>
 
           <input
             id="brand"
             type="text"
             list="brands"
-            placeholder="مثال: SKIN1004">
+            placeholder="مثال: SKIN1004"
+          >
+
 
           <datalist id="brands">
+
             <option value="SKIN1004">
+
             <option value="Bioderma">
+
             <option value="Eucerin">
+
             <option value="CeraVe">
+
             <option value="The Ordinary">
+
           </datalist>
+
+
         </div>
+
 
       </div>
 
+
+
+      <!-- عرض / مميز -->
 
       <div class="checks">
 
-        <label class="checkBox">
-          <input id="offer" type="checkbox">
-          <span>عرض خاص</span>
-        </label>
 
         <label class="checkBox">
-          <input id="featured" type="checkbox">
-          <span>منتج مميز</span>
+
+          <input
+            id="offer"
+            type="checkbox"
+          >
+
+          <span>
+            عرض خاص
+          </span>
+
         </label>
+
+
+
+        <label class="checkBox">
+
+          <input
+            id="featured"
+            type="checkbox"
+          >
+
+          <span>
+            منتج مميز
+          </span>
+
+        </label>
+
 
       </div>
 
 
+
+      <!-- ملاحظة الخصم -->
+
       <div class="field">
-        <label>ملاحظة الخصم</label>
+
+        <label>
+          ملاحظة الخصم
+        </label>
 
         <input
           id="discount_note"
           type="text"
-          placeholder="مثال: لفترة محدودة">
+          placeholder="مثال: لفترة محدودة"
+        >
+
       </div>
 
 
+
+      <!-- الصورة الرئيسية -->
+
       <div class="field">
-        <label>رابط الصورة الرئيسية *</label>
+
+        <label>
+          رابط الصورة الرئيسية *
+        </label>
 
         <input
           id="image"
           type="url"
           required
-          placeholder="https://...">
+          placeholder="https://..."
+        >
+
 
         <img
           id="preview"
           class="preview"
-          alt="معاينة الصورة">
+          alt="معاينة الصورة"
+        >
+
       </div>
 
 
+
+      <!-- الصور الإضافية -->
+
       <div class="field">
-        <label>صور إضافية</label>
+
+        <label>
+          صور إضافية
+        </label>
 
         <textarea
           id="images"
-          placeholder="ضع رابط كل صورة في سطر مستقل"></textarea>
+          placeholder="ضع رابط كل صورة في سطر مستقل"
+        ></textarea>
+
 
         <small>
-          إذا كان المنتج يحتوي على أكثر من صورة، ضع رابط كل صورة في سطر.
+          إذا كان المنتج يحتوي على أكثر من صورة،
+          ضع رابط كل صورة في سطر مستقل.
         </small>
+
       </div>
 
 
+
+      <!-- الوصف -->
+
       <div class="field">
-        <label>وصف المنتج</label>
+
+        <label>
+          وصف المنتج
+        </label>
 
         <textarea
           id="desc"
-          placeholder="اكتب وصف المنتج وفوائده..."></textarea>
+          placeholder="اكتب وصف المنتج وفوائده..."
+        ></textarea>
+
       </div>
 
 
-      <button id="saveBtn" type="submit">
+
+      <!-- زر الحفظ -->
+
+      <button
+        id="saveBtn"
+        type="submit"
+      >
+
         + إضافة المنتج
+
       </button>
 
-      <div id="status" class="status"></div>
+
+
+      <div
+        id="status"
+        class="status"
+      ></div>
+
 
     </form>
 
+
   </div>
+
+
 </div>
+
 
 
 <script>
 
-/* رابط Google Apps Script الخاص بك */
+
+/* ================================
+   رابط Google Apps Script
+================================ */
+
 
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbwxFs75do4gJ941Agg0x6432z18qPjqkZ0ucutOCkaH-keZfDGP_xCPRhawbVXLIw8Y/exec";
 
 
-const form = document.getElementById("productForm");
-const saveBtn = document.getElementById("saveBtn");
-const statusBox = document.getElementById("status");
-const imageInput = document.getElementById("image");
-const preview = document.getElementById("preview");
+
+const form =
+document.getElementById(
+  "productForm"
+);
 
 
-/* معاينة الصورة */
-
-imageInput.addEventListener("input", function(){
-
-  const url = this.value.trim();
-
-  if(url){
-    preview.src = url;
-    preview.style.display = "block";
-  }else{
-    preview.style.display = "none";
-  }
-
-});
-
-preview.addEventListener("error", function(){
-  this.style.display = "none";
-});
+const saveBtn =
+document.getElementById(
+  "saveBtn"
+);
 
 
-/* حفظ المنتج */
-
-form.addEventListener("submit", async function(e){
-
-  e.preventDefault();
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = "جاري إضافة المنتج...";
-
-  statusBox.className = "status";
-  statusBox.style.display = "none";
+const statusBox =
+document.getElementById(
+  "status"
+);
 
 
-  const extraImages = document
-    .getElementById("images")
-    .value
-    .split("\n")
-    .map(x => x.trim())
-    .filter(Boolean)
-    .join(",");
+const imageInput =
+document.getElementById(
+  "image"
+);
 
 
-  const data = new URLSearchParams();
-
-  data.append(
-    "name",
-    document.getElementById("name").value.trim()
-  );
-
-  data.append(
-    "price",
-    document.getElementById("price").value
-  );
-
-  data.append(
-    "old_price",
-    document.getElementById("old_price").value
-  );
-
-  data.append(
-    "offer",
-    document.getElementById("offer").checked
-      ? "عرض خاص"
-      : ""
-  );
-
-  data.append(
-    "discount_note",
-    document.getElementById("discount_note").value.trim()
-  );
-
-  data.append(
-    "image",
-    imageInput.value.trim()
-  );
-
-  data.append(
-    "images",
-    extraImages
-  );
-
-  data.append(
-    "category",
-    document.getElementById("category").value.trim()
-  );
-
-  data.append(
-    "brand",
-    document.getElementById("brand").value.trim()
-  );
-
-  data.append(
-    "featured",
-    document.getElementById("featured").checked
-      ? "نعم"
-      : ""
-  );
-
-  data.append(
-    "desc",
-    document.getElementById("desc").value.trim()
-  );
+const preview =
+document.getElementById(
+  "preview"
+);
 
 
-  try{
 
-    await fetch(SCRIPT_URL,{
-      method:"POST",
-      body:data,
-      mode:"no-cors"
-    });
+/* ================================
+   معاينة الصورة
+================================ */
 
 
-    statusBox.textContent =
-      "✅ تم إضافة المنتج إلى Google Sheets";
+imageInput.addEventListener(
+  "input",
+  function(){
 
-    statusBox.className =
-      "status success";
-
-
-    form.reset();
-
-    preview.src = "";
-    preview.style.display = "none";
+    const url =
+      this.value.trim();
 
 
-    window.scrollTo({
-      top:0,
-      behavior:"smooth"
-    });
+    if(url){
 
+      preview.src = url;
 
-  }catch(error){
+      preview.style.display =
+        "block";
 
-    console.error(error);
+    }
 
-    statusBox.textContent =
-      "❌ تعذر إضافة المنتج، حاول مرة أخرى.";
+    else{
 
-    statusBox.className =
-      "status error";
+      preview.src = "";
+
+      preview.style.display =
+        "none";
+
+    }
 
   }
+);
 
 
-  saveBtn.disabled = false;
-  saveBtn.textContent = "+ إضافة المنتج";
 
-});
+preview.addEventListener(
+  "error",
+  function(){
+
+    this.style.display =
+      "none";
+
+  }
+);
+
+
+
+/* ================================
+   إضافة المنتج
+================================ */
+
+
+form.addEventListener(
+  "submit",
+  async function(e){
+
+    e.preventDefault();
+
+
+    saveBtn.disabled =
+      true;
+
+
+    saveBtn.textContent =
+      "جاري إضافة المنتج...";
+
+
+    statusBox.className =
+      "status";
+
+
+    statusBox.style.display =
+      "none";
+
+
+
+    /* الصور الإضافية */
+
+    const extraImages =
+
+      document
+        .getElementById("images")
+        .value
+
+        .split("\n")
+
+        .map(
+          x => x.trim()
+        )
+
+        .filter(Boolean)
+
+        .join(",");
+
+
+
+    /* تجهيز البيانات */
+
+    const data =
+      new URLSearchParams();
+
+
+
+    data.append(
+
+      "name",
+
+      document
+        .getElementById("name")
+        .value
+        .trim()
+
+    );
+
+
+
+    data.append(
+
+      "price",
+
+      document
+        .getElementById("price")
+        .value
+
+    );
+
+
+
+    data.append(
+
+      "old_price",
+
+      document
+        .getElementById("old_price")
+        .value
+
+    );
+
+
+
+    data.append(
+
+      "offer",
+
+      document
+        .getElementById("offer")
+        .checked
+
+        ? "عرض خاص"
+
+        : ""
+
+    );
+
+
+
+    data.append(
+
+      "discount_note",
+
+      document
+        .getElementById(
+          "discount_note"
+        )
+        .value
+        .trim()
+
+    );
+
+
+
+    data.append(
+
+      "image",
+
+      imageInput
+        .value
+        .trim()
+
+    );
+
+
+
+    data.append(
+
+      "images",
+
+      extraImages
+
+    );
+
+
+
+    data.append(
+
+      "category",
+
+      document
+        .getElementById("category")
+        .value
+        .trim()
+
+    );
+
+
+
+    data.append(
+
+      "brand",
+
+      document
+        .getElementById("brand")
+        .value
+        .trim()
+
+    );
+
+
+
+    data.append(
+
+      "featured",
+
+      document
+        .getElementById("featured")
+        .checked
+
+        ? "نعم"
+
+        : ""
+
+    );
+
+
+
+    data.append(
+
+      "desc",
+
+      document
+        .getElementById("desc")
+        .value
+        .trim()
+
+    );
+
+
+
+    /* إرسال البيانات */
+
+    try{
+
+
+      await fetch(
+
+        SCRIPT_URL,
+
+        {
+
+          method:"POST",
+
+          body:data,
+
+          mode:"no-cors"
+
+        }
+
+      );
+
+
+
+      statusBox.textContent =
+        "✅ تم إضافة المنتج إلى Google Sheets";
+
+
+      statusBox.className =
+        "status success";
+
+
+
+      /* تفريغ النموذج */
+
+      form.reset();
+
+
+      preview.src = "";
+
+
+      preview.style.display =
+        "none";
+
+
+
+      window.scrollTo({
+
+        top:0,
+
+        behavior:"smooth"
+
+      });
+
+
+
+    }
+
+    catch(error){
+
+
+      console.error(error);
+
+
+      statusBox.textContent =
+        "❌ تعذر إضافة المنتج، حاول مرة أخرى.";
+
+
+      statusBox.className =
+        "status error";
+
+    }
+
+
+
+    saveBtn.disabled =
+      false;
+
+
+    saveBtn.textContent =
+      "+ إضافة المنتج";
+
+
+  }
+);
+
 
 </script>
 
+
 </body>
+
 </html>
