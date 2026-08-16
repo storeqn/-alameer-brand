@@ -192,9 +192,6 @@ function normalizeProduct(r, idx){
 
     offer,
 
-    featured:
-  truthy(r.featured),
-    
     discount_note:
       norm(r.discount_note),
 
@@ -670,50 +667,79 @@ function qtyControl(id,qty){
 
 function renderCategories(){
 
-  const cats = categories();
+  const cats =
+    categories();
 
-  $('#categoryGrid').innerHTML = cats.map((c,i)=>{
+  $('#categoryGrid').innerHTML=`
 
-    const count =
-      state.products.filter(
-        p=>p.category === c
-      ).length;
+    <button
+      class="category-card ${
+        state.category === 'الكل'
+        ? 'active'
+        : ''
+      }"
+      data-category="الكل">
 
-    
+      <span class="category-icon">
+        ◉
+      </span>
 
-    return `
+      <strong>
+        كل الأقسام
+      </strong>
+
+      <small>
+        ${state.products.length} منتج
+      </small>
+
+    </button>
+
+
+    ${cats.map((c,i)=>`
+
       <button
-        class="category-card category-card-new"
+        class="category-card ${
+          state.category === c
+          ? 'active'
+          : ''
+        }"
         data-category="${esc(c)}">
 
-        <div class="category-image-box">
-          <img
-  class="category-logo"
-  src="assets/logo.png"
-  alt="${esc(c)}"
->
-        </div>
+        <span class="category-icon">
 
-        <div class="category-card-info">
+          ${
+            [
+              '✦',
+              '◈',
+              '◇',
+              '✧',
+              '◆'
+            ][i%5]
+          }
 
-          <strong>
-            ${esc(c)}
-          </strong>
+        </span>
 
-          <small>
-            ${count} منتج
-          </small>
+        <strong>
+          ${esc(c)}
+        </strong>
 
-        </div>
+        <small>
 
-        <div class="category-details-btn">
-          عرض التفاصيل
-        </div>
+          ${
+            state.products.filter(
+              p=>p.category===c
+            ).length
+          }
+
+          منتج
+
+        </small>
 
       </button>
-    `;
 
-  }).join('');
+    `).join('')}
+
+  `;
 }
 
 
@@ -741,26 +767,6 @@ function renderOffers(){
   $('#offersEmpty').hidden =
     !!arr.length;
 }
-
-function renderFeatured(){
-
-  const box = $('#featuredGrid');
-  const empty = $('#featuredEmpty');
-
-  if(!box) return;
-
-  const arr =
-    state.products
-      .filter(p => p.featured)
-      .slice(0,8);
-
-  box.innerHTML =
-    arr.map(productCard).join('');
-
-  if(empty)
-    empty.hidden = !!arr.length;
-}
-
 
 
 /* =========================
@@ -822,84 +828,62 @@ function renderSubfilters(){
     }
 
 
-    <div class="filter-selects">
+    <select
+      id="priceSort"
+      class="sort-select">
 
-  <select
-    id="categorySelect"
-    class="sort-select">
-
-    <option
-      value="الكل"
-      ${
-        state.category === 'الكل'
-        ? 'selected'
-        : ''
-      }>
-      كل الأقسام
-    </option>
-
-    ${categories().map(c=>`
       <option
-        value="${esc(c)}"
+        value="default"
         ${
-          state.category === c
+          state.sort === 'default'
           ? 'selected'
           : ''
         }>
-        ${esc(c)}
+
+        الترتيب الافتراضي
+
       </option>
-    `).join('')}
-
-  </select>
 
 
-  <select
-    id="priceSort"
-    class="sort-select">
+      <option
+        value="price-low"
+        ${
+          state.sort === 'price-low'
+          ? 'selected'
+          : ''
+        }>
 
-    <option
-      value="default"
-      ${
-        state.sort === 'default'
-        ? 'selected'
-        : ''
-      }>
-      الترتيب الافتراضي
-    </option>
+        السعر: الأقل إلى الأعلى
 
-    <option
-      value="price-low"
-      ${
-        state.sort === 'price-low'
-        ? 'selected'
-        : ''
-      }>
-      السعر: الأقل إلى الأعلى
-    </option>
+      </option>
 
-    <option
-      value="price-high"
-      ${
-        state.sort === 'price-high'
-        ? 'selected'
-        : ''
-      }>
-      السعر: الأعلى إلى الأقل
-    </option>
 
-    <option
-      value="name"
-      ${
-        state.sort === 'name'
-        ? 'selected'
-        : ''
-      }>
-      حسب الاسم
-    </option>
+      <option
+        value="price-high"
+        ${
+          state.sort === 'price-high'
+          ? 'selected'
+          : ''
+        }>
 
-  </select>
+        السعر: الأعلى إلى الأقل
 
-</div>
+      </option>
+
+
+      <option
+        value="name"
+        ${
+          state.sort === 'name'
+          ? 'selected'
+          : ''
+        }>
+
+        حسب الاسم
+
+      </option>
+
+    </select>
   `;
 }
 
@@ -963,14 +947,10 @@ function renderAll(){
 
   renderCategories();
   renderOffers();
-  renderFeatured();
   renderProducts();
   updateCartUI();
 
 }
-
-
-
 
 
 /* =========================
@@ -1804,7 +1784,8 @@ function storeView(mode){
     if(offers)
       offers.hidden=false;
 
-    if(categories) categories.hidden=true;
+    if(categories)
+      categories.hidden=false;
 
     if(products)
       products.hidden=false;
@@ -2401,27 +2382,16 @@ document.addEventListener(
   'change',
   e=>{
 
-    // تغيير القسم
-    if(e.target.id === 'categorySelect'){
+    if(
+      e.target.id ===
+      'priceSort'
+    ){
 
-      state.category = e.target.value;
-      state.brand = 'الكل';
-      state.offersOnly = false;
-
-      renderCategories();
-      renderProducts();
-
-      return;
-    }
-
-    // تغيير الترتيب
-    if(e.target.id === 'priceSort'){
-
-      state.sort = e.target.value;
+      state.sort =
+        e.target.value;
 
       renderProducts();
 
-      return;
     }
 
   }
