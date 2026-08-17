@@ -1672,3 +1672,23 @@ body.cart-open{
   }
 }
 
+/* روابط القسم والبراند داخل تفاصيل المنتج */
+
+.product-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.product-link-btn{
+  width:auto;
+  border:1px solid #d7bd85;
+  background:#fffaf1;
+  color:#9b7026;
+  padding:7px 12px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+}
