@@ -3110,8 +3110,9 @@ function storeView(mode){
             p.featured
         );
 
-    if(categorySection)
-      categorySection.hidden = false;
+if(categorySection)
+  categorySection.hidden = true;
+    
 
     if(products)
       products.hidden = false;
