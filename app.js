@@ -217,7 +217,8 @@ function normalizeProduct(r, idx){
     brand:
       norm(r.brand) ||
       '',
-
+stock: Math.max(0, Number(r.stock || 0)),
+    
     desc:
       norm(
         r.desc ||
