@@ -1788,3 +1788,280 @@ body.cart-open{
 
 }
 
+/* =========================================
+   INSTALL GUIDE
+========================================= */
+
+.install-guide{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+
+  padding:
+    16px
+    12px
+    max(16px, env(safe-area-inset-bottom));
+}
+
+.install-guide[hidden]{
+  display:none !important;
+}
+
+.install-guide-backdrop{
+  position:absolute;
+  inset:0;
+
+  background:rgba(0,0,0,.48);
+
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+
+.install-guide-card{
+  position:relative;
+  z-index:2;
+
+  width:min(500px,100%);
+
+  background:rgba(24,24,23,.92);
+  color:#fff;
+
+  border:1px solid rgba(255,255,255,.12);
+
+  border-radius:24px;
+
+  padding:22px 18px 16px;
+
+  box-shadow:
+    0 24px 70px
+    rgba(0,0,0,.38);
+
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+}
+
+.install-guide-close{
+  position:absolute;
+  top:10px;
+  left:12px;
+
+  width:38px;
+  height:38px;
+
+  padding:0;
+  margin:0;
+
+  border:0;
+  background:transparent;
+
+  color:#ddd;
+
+  font-size:34px;
+  font-weight:300;
+
+  line-height:1;
+
+  cursor:pointer;
+}
+
+.install-guide-top{
+  display:flex;
+  align-items:center;
+  gap:14px;
+
+  padding:18px 8px 16px;
+}
+
+.install-guide-logo{
+  width:74px;
+  height:74px;
+
+  object-fit:contain;
+
+  border-radius:18px;
+
+  background:#fff;
+
+  padding:6px;
+
+  flex:0 0 auto;
+}
+
+.install-guide-top h3{
+  margin:0 0 7px;
+
+  font-size:21px;
+  line-height:1.4;
+}
+
+.install-guide-top p{
+  margin:0;
+
+  color:#bbb;
+
+  font-size:13px;
+  line-height:1.8;
+}
+
+.install-guide-title{
+  margin:4px 8px 12px;
+
+  color:#d5ab4b;
+
+  font-size:15px;
+  font-weight:800;
+}
+
+.install-guide-steps{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.install-step{
+  display:grid;
+
+  grid-template-columns:
+    30px
+    1fr
+    38px;
+
+  align-items:center;
+
+  gap:8px;
+
+  min-height:46px;
+
+  padding:4px 6px;
+
+  border-radius:12px;
+
+  background:rgba(255,255,255,.025);
+}
+
+.install-step-number{
+  width:27px;
+  height:27px;
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#c99b38;
+  color:#17120b;
+
+  font-weight:800;
+  font-size:13px;
+}
+
+.install-step-icon{
+  width:36px;
+  height:36px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:10px;
+
+  background:rgba(255,255,255,.08);
+
+  color:#fff;
+
+  font-size:19px;
+}
+
+.install-guide-actions{
+  display:grid;
+
+  grid-template-columns:
+    1fr
+    1.35fr;
+
+  gap:10px;
+
+  margin-top:18px;
+}
+
+.install-later-btn,
+.install-ok-btn{
+  min-height:48px;
+
+  border-radius:12px;
+
+  font-size:15px;
+  font-weight:800;
+
+  cursor:pointer;
+}
+
+.install-later-btn{
+  border:1px solid rgba(255,255,255,.12);
+
+  background:rgba(255,255,255,.04);
+
+  color:#aaa;
+}
+
+.install-ok-btn{
+  border:0;
+
+  background:
+    linear-gradient(
+      135deg,
+      #b7892e,
+      #dfb755
+    );
+
+  color:#17120b;
+}
+
+@media(max-width:600px){
+
+  .install-guide{
+    padding:
+      10px
+      10px
+      max(12px, env(safe-area-inset-bottom));
+  }
+
+  .install-guide-card{
+    border-radius:22px;
+    padding:18px 14px 14px;
+  }
+
+  .install-guide-logo{
+    width:66px;
+    height:66px;
+  }
+
+  .install-guide-top h3{
+    font-size:18px;
+  }
+
+  .install-guide-top p{
+    font-size:12px;
+  }
+
+  .install-step{
+    grid-template-columns:
+      28px
+      1fr
+      34px;
+  }
+
+  .install-step-icon{
+    width:34px;
+    height:34px;
+  }
+
+  .install-guide-actions{
+    gap:8px;
+  }
+}
