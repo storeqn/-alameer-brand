@@ -1555,121 +1555,81 @@ function renderSubfilters(){
   const box =
     $('#subfilters');
 
-
-  if(
-    !box
-  ){
-
+  if(!box){
     return;
-
   }
-
 
   const cats =
     categories();
 
-
   const brandList =
     brands();
 
-
-  box.hidden =
-    false;
-
+  box.hidden = false;
 
   box.innerHTML = `
 
+    <select
+      id="categorySelect"
+      class="sort-select">
 
-    <button
+      <option
+        value="الكل"
+        ${
+          state.category === 'الكل'
+          ? 'selected'
+          : ''
+        }>
+        كل الأقسام
+      </option>
 
-      class="chip ${
-        state.category === 'الكل'
-        ? 'active'
-        : ''
-      }"
-
-      data-quick-category="الكل">
-
-      كل الأقسام
-
-    </button>
-
-
-    ${
-
-      cats.map(
-        c => `
-
-
-        <button
-
-          class="chip ${
+      ${cats.map(c => `
+        <option
+          value="${esc(c)}"
+          ${
             state.category === c
-            ? 'active'
+            ? 'selected'
             : ''
-          }"
-
-          data-quick-category="${esc(c)}">
-
+          }>
           ${esc(c)}
+        </option>
+      `).join('')}
 
-        </button>
-
-
-        `
-      )
-      .join('')
-
-    }
+    </select>
 
 
-    <button
+    <select
+      id="brandSelect"
+      class="sort-select">
 
-      class="chip ${
-        state.brand === 'الكل'
-        ? 'active'
-        : ''
-      }"
+      <option
+        value="الكل"
+        ${
+          state.brand === 'الكل'
+          ? 'selected'
+          : ''
+        }>
+        كل البراندات
+      </option>
 
-      data-brand="الكل">
-
-      كل البراندات
-
-    </button>
-
-
-    ${
-
-      brandList.map(
-        b => `
-
-
-        <button
-
-          class="chip ${
+      ${brandList.map(b => `
+        <option
+          value="${esc(b)}"
+          ${
             state.brand === b
-            ? 'active'
+            ? 'selected'
             : ''
-          }"
-
-          data-brand="${esc(b)}">
-
+          }>
           ${esc(b)}
+        </option>
+      `).join('')}
 
-        </button>
-
-
-        `
-      )
-      .join('')
-
-    }
+    </select>
 
 
     <select
       id="priceSort"
       class="sort-select">
-
 
       <option
         value="default"
@@ -1678,11 +1638,8 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
-
         الترتيب الافتراضي
-
       </option>
-
 
       <option
         value="price-low"
@@ -1691,12 +1648,8 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
-
-        السعر:
-        الأقل إلى الأعلى
-
+        السعر: الأقل إلى الأعلى
       </option>
-
 
       <option
         value="price-high"
@@ -1705,12 +1658,8 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
-
-        السعر:
-        الأعلى إلى الأقل
-
+        السعر: الأعلى إلى الأقل
       </option>
-
 
       <option
         value="name"
@@ -1719,19 +1668,13 @@ function renderSubfilters(){
           ? 'selected'
           : ''
         }>
-
-        حسب الاسم
-
+        الترتيب حسب الاسم
       </option>
-
 
     </select>
 
-
   `;
-
 }
-
 
 /* =========================
    PRODUCTS
@@ -3914,28 +3857,49 @@ document.addEventListener(
 ========================= */
 
 document.addEventListener(
-
   'change',
 
   e => {
 
+    /* اختيار القسم */
+    if(e.target.id === 'categorySelect'){
 
-    if(
-      e.target.id ===
-      'priceSort'
-    ){
+      state.category = e.target.value;
+      state.brand = 'الكل';
+      state.offersOnly = false;
 
-      state.sort =
-        e.target.value;
+      renderCategories();
+      renderProducts();
 
+      return;
+    }
+
+
+    /* اختيار البراند */
+    if(e.target.id === 'brandSelect'){
+
+      state.brand = e.target.value;
+      state.offersOnly = false;
 
       renderProducts();
 
+      return;
+    }
+
+
+    /* الترتيب */
+    if(e.target.id === 'priceSort'){
+
+      state.sort = e.target.value;
+
+      renderProducts();
+
+      return;
     }
 
   }
-
 );
+
 
 
 /* =========================
