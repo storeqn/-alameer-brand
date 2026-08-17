@@ -1235,127 +1235,84 @@ function renderCategories(){
   const grid =
     $('#categoryGrid');
 
-
-  if(
-    !grid
-  ){
-
+  if(!grid){
     return;
-
   }
-
 
   const cats =
     categories();
 
-
   grid.innerHTML = `
 
-
     <button
-
+      type="button"
       class="category-card ${
         state.category === 'الكل'
-        ? 'active'
-        : ''
+          ? 'active'
+          : ''
       }"
-
       data-category="الكل">
 
+      <div class="category-logo-wrap">
+        <img
+          src="assets/logo.png"
+          alt="الأمير براند"
+          class="category-logo">
+      </div>
 
-      <span class="category-icon">
-
-        ◉
-
-      </span>
-
-
-      <strong>
-
+      <strong class="category-name">
         كل الأقسام
-
       </strong>
 
-
-      <small>
-
-        ${state.products.length}
-        منتج
-
+      <small class="category-count">
+        ${state.products.length} منتج
       </small>
-
 
     </button>
 
 
-    ${
+    ${cats.map(c => {
 
-      cats.map(
-        (c,i) => `
+      const count =
+        state.products.filter(
+          p => p.category === c
+        ).length;
 
+      return `
 
         <button
-
+          type="button"
           class="category-card ${
             state.category === c
-            ? 'active'
-            : ''
+              ? 'active'
+              : ''
           }"
-
           data-category="${esc(c)}">
 
+          <div class="category-logo-wrap">
 
-          <span class="category-icon">
+            <img
+              src="assets/logo.png"
+              alt="${esc(c)}"
+              class="category-logo">
 
-            ${
-              [
-                '✦',
-                '◈',
-                '◇',
-                '✧',
-                '◆'
-              ]
-              [i % 5]
-            }
+          </div>
 
-          </span>
-
-
-          <strong>
-
+          <strong class="category-name">
             ${esc(c)}
-
           </strong>
 
-
-          <small>
-
-            ${
-              state.products
-              .filter(
-                p =>
-                  p.category === c
-              )
-              .length
-            }
-
-            منتج
-
+          <small class="category-count">
+            ${count} منتج
           </small>
-
 
         </button>
 
+      `;
 
-        `
-      )
-      .join('')
-
-    }
-
+    }).join('')}
 
   `;
-
 }
 
 
@@ -3658,11 +3615,10 @@ if(categoriesNav){
   state.offersOnly = false;
 
   renderCategories();
-  renderProducts();
 
-  storeView('products');
+  storeView('categories');
 
-  $('#products')
+  $('#categories')
     ?.scrollIntoView({
       behavior:'smooth',
       block:'start'
@@ -3670,7 +3626,6 @@ if(categoriesNav){
 
   return;
 }
-
 
     const category =
 
