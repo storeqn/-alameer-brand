@@ -2554,22 +2554,35 @@ function openProduct(id){
       <div class="product-info">
 
 
-        <span class="section-kicker">
+       <div class="product-links">
 
-          ${esc(
+  ${
+    p.category
+    ? `
+      <button
+        type="button"
+        class="product-link-btn"
+        data-product-category="${esc(p.category)}">
+        ${esc(p.category)}
+      </button>
+    `
+    : ''
+  }
 
-            [
-              p.category,
-              p.brand
-            ]
+  ${
+    p.brand
+    ? `
+      <button
+        type="button"
+        class="product-link-btn"
+        data-product-brand="${esc(p.brand)}">
+        ${esc(p.brand)}
+      </button>
+    `
+    : ''
+  }
 
-            .filter(Boolean)
-
-            .join(' • ')
-
-          )}
-
-        </span>
+</div>
 
 
         <h2>
@@ -3383,7 +3396,64 @@ document.addEventListener(
 
   e => {
 
+/* الانتقال من تفاصيل المنتج إلى القسم */
 
+const productCategory =
+  e.target.closest('[data-product-category]');
+
+if(productCategory){
+
+  state.category =
+    productCategory.dataset.productCategory;
+
+  state.brand = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+
+  renderCategories();
+  renderProducts();
+
+  storeView('products');
+
+  $('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+
+
+/* الانتقال من تفاصيل المنتج إلى البراند */
+
+const productBrand =
+  e.target.closest('[data-product-brand]');
+
+if(productBrand){
+
+  state.brand =
+    productBrand.dataset.productBrand;
+
+  state.category = 'الكل';
+  state.offersOnly = false;
+
+  $('#productModal')?.close();
+
+  renderProducts();
+
+  storeView('products');
+
+  $('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+    
     const addBtn =
 
       e.target.closest(
