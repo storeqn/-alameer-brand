@@ -3574,55 +3574,32 @@ document.addEventListener(
     }
 
 
-    const categoriesNav =
+  const categoriesNav =
+  e.target.closest(
+    'a[href="#categories"], [data-go-categories]'
+  );
 
-      e.target.closest(
+if(categoriesNav){
 
-        'a[href="#categories"], [data-go-categories]'
+  e.preventDefault();
 
-      );
+  state.category = 'الكل';
+  state.brand = 'الكل';
+  state.offersOnly = false;
 
+  renderCategories();
+  renderProducts();
 
-    if(
-      categoriesNav
-    ){
+  storeView('products');
 
-      e.preventDefault();
+  $('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
 
-
-      state.category =
-        'الكل';
-
-
-      state.brand =
-        'الكل';
-
-
-      state.offersOnly =
-        false;
-
-
-      renderCategories();
-
-
-      storeView(
-        'categories'
-      );
-
-
-      $('#categories')
-        ?.scrollIntoView({
-
-          behavior:'smooth',
-
-          block:'start'
-
-        });
-
-
-      return;
-
-    }
+  return;
+}
 
 
     const category =
