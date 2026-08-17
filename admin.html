@@ -467,7 +467,29 @@ button:disabled{
 
       </div>
 
+<!-- الكمية المتوفرة -->
 
+<div class="field">
+
+  <label>
+    الكمية المتوفرة *
+  </label>
+
+  <input
+    id="stock"
+    type="number"
+    min="0"
+    required
+    placeholder="مثال: 10"
+  >
+
+  <small>
+    اكتب 0 إذا نفذت الكمية.
+  </small>
+
+</div>
+
+      
 
       <!-- القسم والبراند -->
 
@@ -882,7 +904,16 @@ form.addEventListener(
 
     );
 
+data.append(
 
+  "stock",
+
+  document
+    .getElementById("stock")
+    .value
+
+);
+    
 
     data.append(
 
