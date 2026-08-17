@@ -1692,3 +1692,99 @@ body.cart-open{
   font-weight:700;
   cursor:pointer;
 }
+
+
+/* =========================================
+   صفحة الأقسام
+========================================= */
+
+#categoryGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.category-card{
+  position:relative;
+  min-height:185px;
+  border:1px solid #eadfc9;
+  border-radius:24px;
+  background:#fff;
+  padding:20px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  overflow:hidden;
+  cursor:pointer;
+  color:#171512;
+}
+
+.category-card.active{
+  background:#17130d;
+  color:#fff;
+  border-color:#b68b3d;
+}
+
+.category-logo-wrap{
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #eadfc9;
+  padding:7px;
+}
+
+.category-logo{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:50%;
+}
+
+.category-name{
+  font-size:20px;
+  text-align:center;
+  line-height:1.4;
+}
+
+.category-count{
+  font-size:13px;
+  opacity:.7;
+}
+
+@media(min-width:700px){
+
+  #categoryGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+}
+
+@media(max-width:480px){
+
+  #categoryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .category-card{
+    min-height:160px;
+    padding:15px 8px;
+  }
+
+  .category-logo-wrap{
+    width:62px;
+    height:62px;
+  }
+
+  .category-name{
+    font-size:17px;
+  }
+
+}
+
