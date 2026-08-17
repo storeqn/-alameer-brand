@@ -1642,3 +1642,33 @@ body.cart-open{
   border-color:#9d2d20;
 }
 
+/* =========================
+   صف الفلاتر
+========================= */
+
+#subfilters{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  align-items:center;
+}
+
+#subfilters .sort-select{
+  width:100%;
+  min-width:0;
+}
+
+/* الهاتف */
+@media(max-width:680px){
+
+  #subfilters{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+  }
+
+  #subfilters .sort-select{
+    font-size:13px;
+    padding:10px 7px;
+  }
+}
+
