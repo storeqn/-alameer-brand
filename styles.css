@@ -1619,3 +1619,26 @@ body.cart-open{
     min-height:64px;
   }
 }
+
+/* =========================
+   حالة نفذت الكمية
+========================= */
+
+.add-btn:disabled{
+  background:#c9c4ba !important;
+  color:#ffffff !important;
+  cursor:not-allowed;
+  opacity:.9;
+}
+
+.product-card:has(.add-btn:disabled) .product-image{
+  opacity:.55;
+  filter:grayscale(.35);
+}
+
+.product-card:has(.add-btn:disabled) .offer-pill{
+  background:#9d2d20;
+  color:#fff;
+  border-color:#9d2d20;
+}
+
