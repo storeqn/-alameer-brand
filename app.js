@@ -1169,20 +1169,75 @@ function saveCart(){
 }
 
 
-function add(id, n = 1){
+function add(id,n=1){
+
+  const product = byId(id);
+
+  if(!product){
+    return;
+  }
+
+  const currentQty = cartQty(id);
+
+  if(currentQty >= product.stock){
+
+    toast('لا يمكن إضافة كمية أكثر من المتوفر');
+
+    return;
+  }
+
+  const allowedQty =
+    Math.min(
+      currentQty + n,
+      product.stock
+    );
 
   const x =
     state.cart.find(
-      i =>
-        String(i.id) ===
-        String(id)
+      i=>String(i.id)===String(id)
     );
 
   if(x){
 
-    x.qty += n;
+    x.qty = allowedQty;
+
+  } else {
+
+    state.cart.push({
+      id,
+      qty: Math.min(n, product.stock)
+    });
 
   }
+
+  saveCart();
+
+  const qty = cartQty(id);
+
+  const detailQty =
+    $('#detailQty');
+
+  if(
+    detailQty &&
+    String(state.openProductId)===String(id)
+  ){
+
+    detailQty.innerHTML =
+      qtyControl(id,qty);
+
+  }
+
+  if(qty >= product.stock){
+
+    toast(`وصلت للكمية المتوفرة: ${product.stock}`);
+
+  } else {
+
+    toast(`تمت الإضافة للسلة • العدد ${qty}`);
+
+  }
+}
+
 
   else{
 
@@ -1226,20 +1281,29 @@ function add(id, n = 1){
 }
 
 
-function setQty(id, qty){
+function setQty(id,qty){
+
+  const product = byId(id);
+
+  if(!product){
+    return;
+  }
+
+  qty = Number(qty || 0);
+
+  if(qty > product.stock){
+
+    qty = product.stock;
+
+    toast(`المتوفر فقط ${product.stock} قطعة`);
+  }
 
   const x =
     state.cart.find(
-      i =>
-        String(i.id) ===
-        String(id)
+      i=>String(i.id)===String(id)
     );
 
-
-  if(
-    !x &&
-    qty > 0
-  ){
+  if(!x && qty>0){
 
     state.cart.push({
       id,
@@ -1250,18 +1314,14 @@ function setQty(id, qty){
 
   else if(x){
 
-    x.qty =
-      qty;
+    x.qty = qty;
 
   }
 
-
   state.cart =
     state.cart.filter(
-      i =>
-        i.qty > 0
+      i=>i.qty>0
     );
-
 
   saveCart();
 }
