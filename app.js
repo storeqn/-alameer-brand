@@ -15,7 +15,7 @@ const state = {
 };
 
 const money = v =>
-  `${Number(v || 0).toLocaleString('ar-IQ')} ${C.currency}`;
+  `${Number(v || 0).toLocaleString('en-US')} د.ع`;
 
 const norm = v =>
   String(v ?? '').trim();
