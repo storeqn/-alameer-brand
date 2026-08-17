@@ -4059,4 +4059,126 @@ if(
    START
 ========================= */
 
+/* =========================================
+   INSTALL GUIDE
+========================================= */
+
+function isStandaloneMode(){
+
+  return (
+    window.matchMedia(
+      '(display-mode: standalone)'
+    ).matches
+    ||
+    window.navigator.standalone === true
+  );
+}
+
+
+function showInstallGuide(){
+
+  const guide =
+    $('#installGuide');
+
+  if(!guide){
+    return;
+  }
+
+  /* إذا الموقع مفتوح كتطبيق مثبت لا تظهر النافذة */
+  if(isStandaloneMode()){
+    guide.hidden = true;
+    return;
+  }
+
+  /* إذا ضغط سابقاً حسنًا فهمت لا تظهر مرة أخرى */
+  const dismissed =
+    localStorage.getItem(
+      'alameer_install_guide_done'
+    );
+
+  if(dismissed === '1'){
+    guide.hidden = true;
+    return;
+  }
+
+  setTimeout(
+    () => {
+      guide.hidden = false;
+    },
+    1200
+  );
+}
+
+
+function closeInstallGuide(
+  remember = false
+){
+
+  const guide =
+    $('#installGuide');
+
+  if(guide){
+    guide.hidden = true;
+  }
+
+  if(remember){
+
+    localStorage.setItem(
+      'alameer_install_guide_done',
+      '1'
+    );
+
+  }
+}
+
+
+document.addEventListener(
+  'click',
+  e => {
+
+    const ok =
+      e.target.closest(
+        '[data-install-ok]'
+      );
+
+    if(ok){
+
+      closeInstallGuide(true);
+
+      return;
+    }
+
+
+    const later =
+      e.target.closest(
+        '[data-install-later]'
+      );
+
+    if(later){
+
+      closeInstallGuide(false);
+
+      return;
+    }
+
+
+    const close =
+      e.target.closest(
+        '[data-install-close]'
+      );
+
+    if(close){
+
+      closeInstallGuide(false);
+
+      return;
+    }
+
+  }
+);
+
+
+showInstallGuide();
+
+
 loadProducts();
