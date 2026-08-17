@@ -3,6 +3,9 @@ const C = window.STORE_CONFIG;
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 
+const firstEl = (...selectors) =>
+  selectors.map(s => $(s)).find(Boolean) || null;
+
 
 /* =========================
    STATE
@@ -51,7 +54,9 @@ const truthy = v =>
     'y',
     'نعم',
     'عرض',
-    'offer'
+    'offer',
+    'مميز',
+    'featured'
   ].includes(
     norm(v).toLowerCase()
   );
@@ -61,18 +66,20 @@ const esc = s =>
   String(s ?? '').replace(
     /[&<>'"]/g,
     c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      "'":'&#39;',
+      '"':'&quot;'
     }[c])
   );
 
 
 const byId = id =>
   state.products.find(
-    p => String(p.id) === String(id)
+    p =>
+      String(p.id) ===
+      String(id)
   );
 
 
@@ -89,51 +96,81 @@ function parseCSV(text){
   let quote = false;
 
 
-  for(let i = 0; i < text.length; i++){
+  for(
+    let i = 0;
+    i < text.length;
+    i++
+  ){
 
     const ch = text[i];
     const nx = text[i + 1];
 
 
-    if(ch === '"' && quote && nx === '"'){
+    if(
+      ch === '"' &&
+      quote &&
+      nx === '"'
+    ){
 
       cell += '"';
+
       i++;
 
     }
 
-    else if(ch === '"'){
+    else if(
+      ch === '"'
+    ){
 
       quote = !quote;
 
     }
 
-    else if(ch === ',' && !quote){
+    else if(
+      ch === ',' &&
+      !quote
+    ){
 
       row.push(cell);
+
       cell = '';
 
     }
 
     else if(
-      (ch === '\n' || ch === '\r') &&
+      (
+        ch === '\n' ||
+        ch === '\r'
+      ) &&
       !quote
     ){
 
-      if(ch === '\r' && nx === '\n'){
+      if(
+        ch === '\r' &&
+        nx === '\n'
+      ){
+
         i++;
+
       }
 
+
       row.push(cell);
+
       cell = '';
+
 
       if(
         row.some(
-          x => x.trim() !== ''
+          x =>
+            x.trim() !== ''
         )
       ){
+
         rows.push(row);
+
       }
+
 
       row = [];
 
@@ -153,15 +190,22 @@ function parseCSV(text){
 
   if(
     row.some(
-      x => x.trim() !== ''
+      x =>
+        x.trim() !== ''
     )
   ){
+
     rows.push(row);
+
   }
 
 
-  if(!rows.length){
+  if(
+    !rows.length
+  ){
+
     return [];
+
   }
 
 
@@ -169,7 +213,10 @@ function parseCSV(text){
     rows
       .shift()
       .map(
-        h => h.trim().toLowerCase()
+        h =>
+          h
+            .trim()
+            .toLowerCase()
       );
 
 
@@ -178,8 +225,12 @@ function parseCSV(text){
       Object.fromEntries(
         headers.map(
           (h, i) => [
+
             h,
-            (r[i] ?? '').trim()
+
+            (r[i] ?? '')
+              .trim()
+
           ]
         )
       )
@@ -189,15 +240,19 @@ function parseCSV(text){
 
 
 /* =========================
-   NORMALIZE PRODUCT
+   PRODUCT NORMALIZE
 ========================= */
 
 function normalizeProduct(r, idx){
 
   const imagesRaw =
+
     r.images ||
+
     r.image_urls ||
+
     r.gallery ||
+
     '';
 
 
@@ -210,7 +265,9 @@ function normalizeProduct(r, idx){
     )
 
   ]
+
   .map(norm)
+
   .filter(Boolean);
 
 
@@ -220,35 +277,64 @@ function normalizeProduct(r, idx){
 
   const price =
     Number(
-      String(r.price || 0)
-        .replace(/[^\d.]/g, '')
+      String(
+        r.price || 0
+      )
+      .replace(
+        /[^\d.]/g,
+        ''
+      )
     ) || 0;
 
 
   const oldPrice =
     Number(
       String(
+
         r.old_price ||
+
         r.oldprice ||
+
         0
+
       )
-      .replace(/[^\d.]/g, '')
+
+      .replace(
+        /[^\d.]/g,
+        ''
+      )
     ) || 0;
 
 
   const offer =
-    truthy(r.offer) ||
-    truthy(r.is_offer) ||
+
+    truthy(
+      r.offer
+    )
+
+    ||
+
+    truthy(
+      r.is_offer
+    )
+
+    ||
+
     (
       oldPrice > price &&
       price > 0
-    ) ||
-    !!norm(r.discount_note);
+    )
+
+    ||
+
+    !!norm(
+      r.discount_note
+    );
 
 
   /*
-    إذا stock فارغ في المنتجات القديمة
-    نعتبره متوفراً مؤقتاً
+    المنتجات القديمة التي لا تحتوي
+    stock تعتبر متوفرة مؤقتاً
   */
 
   const rawStock =
@@ -256,67 +342,126 @@ function normalizeProduct(r, idx){
 
 
   const stock =
+
     rawStock === ''
-      ? 999999
-      : Math.max(
-          0,
-          Number(rawStock) || 0
-        );
+
+    ? 999999
+
+    : Math.max(
+
+        0,
+
+        Number(
+          rawStock
+        ) || 0
+
+      );
 
 
   return {
 
     id:
+
       norm(r.id) ||
+
       `p${idx + 1}`,
 
+
     name:
+
       norm(r.name) ||
+
       'منتج',
 
+
     price,
+
 
     old_price:
       oldPrice,
 
+
     offer,
 
+
     discount_note:
-      norm(r.discount_note),
+      norm(
+        r.discount_note
+      ),
+
 
     images:
+
       uniqImages.length
-        ? uniqImages
-        : ['assets/logo.png'],
+
+      ? uniqImages
+
+      : [
+          'assets/logo.png'
+        ],
+
 
     category:
-      norm(r.category) ||
+
+      norm(
+        r.category
+      )
+
+      ||
+
       'أخرى',
 
+
     brand:
-      norm(r.brand) ||
+
+      norm(
+        r.brand
+      )
+
+      ||
+
       '',
+
+
+    featured:
+
+      truthy(
+        r.featured
+      ),
+
 
     stock,
 
+
     desc:
+
       norm(
+
         r.desc ||
+
         r.description
+
       ),
 
+
     active:
+
       r.active === ''
-        ? true
-        : ![
-            '0',
-            'false',
-            'no',
-            'لا'
-          ].includes(
-            norm(r.active)
-              .toLowerCase()
+
+      ? true
+
+      : ![
+          '0',
+          'false',
+          'no',
+          'لا'
+        ]
+        .includes(
+          norm(
+            r.active
           )
+          .toLowerCase()
+        )
 
   };
 
@@ -333,17 +478,37 @@ async function loadProducts(){
     $('#loadingCard');
 
 
-  if(loading){
-    loading.hidden = false;
+  if(
+    loading
+  ){
+
+    loading.hidden =
+      false;
+
   }
 
 
   try{
 
+
+    if(
+      !C?.sheetCsvUrl
+    ){
+
+      throw new Error(
+        'sheetCsvUrl missing'
+      );
+
+    }
+
+
     const separator =
+
       C.sheetCsvUrl.includes('?')
-        ? '&'
-        : '?';
+
+      ? '&'
+
+      : '?';
 
 
     const res =
@@ -352,13 +517,15 @@ async function loadProducts(){
         `${C.sheetCsvUrl}${separator}_=${Date.now()}`,
 
         {
-          cache: 'no-store'
+          cache:'no-store'
         }
 
       );
 
 
-    if(!res.ok){
+    if(
+      !res.ok
+    ){
 
       throw new Error(
         'تعذر قراءة الشيت'
@@ -372,14 +539,21 @@ async function loadProducts(){
 
 
     const rows =
+
       parseCSV(text)
-        .map(normalizeProduct)
-        .filter(
-          p => p.active
-        );
+
+      .map(
+        normalizeProduct
+      )
+
+      .filter(
+        p => p.active
+      );
 
 
-    if(!rows.length){
+    if(
+      !rows.length
+    ){
 
       throw new Error(
         'لا توجد منتجات'
@@ -394,15 +568,20 @@ async function loadProducts(){
 
     localStorage.setItem(
 
-      C.cacheKey,
+      C.cacheKey ||
 
-      JSON.stringify(rows)
+      'alameer_products_v1',
+
+      JSON.stringify(
+        rows
+      )
 
     );
 
   }
 
   catch(error){
+
 
     console.error(
       'Products error:',
@@ -417,14 +596,24 @@ async function loadProducts(){
 
       cached =
         JSON.parse(
+
           localStorage.getItem(
-            C.cacheKey
-          ) || '[]'
+
+            C?.cacheKey ||
+
+            'alameer_products_v1'
+
+          )
+
+          ||
+
+          '[]'
+
         );
 
     }
 
-    catch(e){
+    catch(_){
 
       cached = [];
 
@@ -432,12 +621,17 @@ async function loadProducts(){
 
 
     state.products =
+
       cached.length
-        ? cached
-        : demoProducts;
+
+      ? cached
+
+      : demoProducts;
 
 
-    if(!cached.length){
+    if(
+      !cached.length
+    ){
 
       toast(
         'تعذر تحميل المنتجات من الشيت'
@@ -448,8 +642,13 @@ async function loadProducts(){
   }
 
 
-  if(loading){
-    loading.hidden = true;
+  if(
+    loading
+  ){
+
+    loading.hidden =
+      true;
+
   }
 
 
@@ -465,19 +664,33 @@ async function loadProducts(){
 const demoProducts = [
 
   {
-    id: 'demo1',
-    name: 'منتج تجريبي',
-    price: 0,
-    old_price: 0,
-    offer: false,
-    discount_note: '',
-    images: [
+
+    id:'demo1',
+
+    name:'منتج تجريبي',
+
+    price:0,
+
+    old_price:0,
+
+    offer:false,
+
+    discount_note:'',
+
+    images:[
       'assets/logo.png'
     ],
-    category: 'أخرى',
-    brand: 'AB',
-    stock: 10,
-    desc: 'منتج تجريبي.'
+
+    category:'أخرى',
+
+    brand:'AB',
+
+    featured:true,
+
+    stock:10,
+
+    desc:'منتج تجريبي.'
+
   }
 
 ];
@@ -494,10 +707,13 @@ function categories(){
     ...new Set(
 
       state.products
-        .map(
-          p => p.category
-        )
-        .filter(Boolean)
+
+      .map(
+        p =>
+          p.category
+      )
+
+      .filter(Boolean)
 
     )
 
@@ -517,15 +733,20 @@ function brands(){
     ...new Set(
 
       state.products
-        .map(
-          p => p.brand
-        )
-        .filter(Boolean)
+
+      .map(
+        p =>
+          p.brand
+      )
+
+      .filter(Boolean)
 
     )
 
-  ].sort(
-    (a, b) =>
+  ]
+
+  .sort(
+    (a,b) =>
       a.localeCompare(
         b,
         'ar'
@@ -536,35 +757,49 @@ function brands(){
 
 
 /* =========================
-   FILTER
+   FILTERED PRODUCTS
 ========================= */
 
 function filtered(){
 
   const q =
+
     state.search
-      .toLowerCase()
-      .trim();
+
+    .toLowerCase()
+
+    .trim();
 
 
   let arr =
+
     state.products.filter(
       p => {
 
 
         const offerOk =
+
           !state.offersOnly ||
+
           p.offer;
 
 
         const categoryOk =
-          state.category === 'الكل' ||
+
+          state.category === 'الكل'
+
+          ||
+
           p.category ===
             state.category;
 
 
         const brandOk =
-          state.brand === 'الكل' ||
+
+          state.brand === 'الكل'
+
+          ||
+
           p.brand ===
             state.brand;
 
@@ -579,11 +814,15 @@ function filtered(){
 
           ${p.desc || ''}
 
-        `.toLowerCase();
+        `
+
+        .toLowerCase();
 
 
         const searchOk =
+
           !q ||
+
           searchText.includes(q);
 
 
@@ -609,9 +848,14 @@ function filtered(){
   ){
 
     arr.sort(
-      (a, b) =>
-        Number(a.price || 0) -
-        Number(b.price || 0)
+      (a,b) =>
+        Number(
+          a.price || 0
+        )
+        -
+        Number(
+          b.price || 0
+        )
     );
 
   }
@@ -623,9 +867,14 @@ function filtered(){
   ){
 
     arr.sort(
-      (a, b) =>
-        Number(b.price || 0) -
-        Number(a.price || 0)
+      (a,b) =>
+        Number(
+          b.price || 0
+        )
+        -
+        Number(
+          a.price || 0
+        )
     );
 
   }
@@ -637,7 +886,7 @@ function filtered(){
   ){
 
     arr.sort(
-      (a, b) =>
+      (a,b) =>
         a.name.localeCompare(
           b.name,
           'ar'
@@ -656,45 +905,55 @@ function filtered(){
    QTY CONTROL
 ========================= */
 
-function qtyControl(id, qty){
+function qtyControl(
+  id,
+  qty
+){
 
   const product =
     byId(id);
 
 
   const maxed =
+
     product &&
-    qty >= product.stock;
+
+    qty >=
+      product.stock;
 
 
   return `
 
-  <div class="qty-control">
-
-    <button
-      type="button"
-      data-dec="${esc(id)}">
-
-      −
-
-    </button>
+    <div class="qty-control">
 
 
-    <span>
-      ${qty}
-    </span>
+      <button
+        type="button"
+        data-dec="${esc(id)}">
+
+        −
+
+      </button>
 
 
-    <button
-      type="button"
-      data-inc="${esc(id)}"
-      ${maxed ? 'disabled' : ''}>
+      <span>
 
-      +
+        ${qty}
 
-    </button>
+      </span>
 
-  </div>
+
+      <button
+        type="button"
+        data-inc="${esc(id)}"
+        ${maxed ? 'disabled' : ''}>
+
+        +
+
+      </button>
+
+
+    </div>
 
   `;
 
@@ -705,10 +964,15 @@ function qtyControl(id, qty){
    PRODUCT CARD
 ========================= */
 
-function productCard(p, index = 99){
+function productCard(
+  p,
+  index = 99
+){
 
   const qty =
-    cartQty(p.id);
+    cartQty(
+      p.id
+    );
 
 
   const soldOut =
@@ -735,22 +999,19 @@ function productCard(p, index = 99){
 
         loading="${
           index < 4
-            ? 'eager'
-            : 'lazy'
+          ? 'eager'
+          : 'lazy'
         }"
 
         decoding="async"
 
         fetchpriority="${
           index < 4
-            ? 'high'
-            : 'low'
+          ? 'high'
+          : 'low'
         }"
 
-        onerror="
-          this.onerror=null;
-          this.src='assets/logo.png'
-        "
+        onerror="this.onerror=null;this.src='assets/logo.png'"
 
       >
 
@@ -861,9 +1122,12 @@ function productCard(p, index = 99){
 
           <div class="price-row">
 
+
             <span class="price">
 
-              ${money(p.price)}
+              ${money(
+                p.price
+              )}
 
             </span>
 
@@ -885,6 +1149,7 @@ function productCard(p, index = 99){
 
               : ''
             }
+
 
           </div>
 
@@ -967,17 +1232,21 @@ function productCard(p, index = 99){
 
 function renderCategories(){
 
-  const cats =
-    categories();
-
-
   const grid =
     $('#categoryGrid');
 
 
-  if(!grid){
+  if(
+    !grid
+  ){
+
     return;
+
   }
+
+
+  const cats =
+    categories();
 
 
   grid.innerHTML = `
@@ -985,14 +1254,11 @@ function renderCategories(){
 
     <button
 
-      class="
-        category-card
-        ${
-          state.category === 'الكل'
-            ? 'active'
-            : ''
-        }
-      "
+      class="category-card ${
+        state.category === 'الكل'
+        ? 'active'
+        : ''
+      }"
 
       data-category="الكل">
 
@@ -1025,19 +1291,16 @@ function renderCategories(){
     ${
 
       cats.map(
-        (c, i) => `
+        (c,i) => `
 
 
         <button
 
-          class="
-            category-card
-            ${
-              state.category === c
-                ? 'active'
-                : ''
-            }
-          "
+          class="category-card ${
+            state.category === c
+            ? 'active'
+            : ''
+          }"
 
           data-category="${esc(c)}">
 
@@ -1051,7 +1314,8 @@ function renderCategories(){
                 '◇',
                 '✧',
                 '◆'
-              ][i % 5]
+              ]
+              [i % 5]
             }
 
           </span>
@@ -1068,11 +1332,11 @@ function renderCategories(){
 
             ${
               state.products
-                .filter(
-                  p =>
-                    p.category === c
-                )
-                .length
+              .filter(
+                p =>
+                  p.category === c
+              )
+              .length
             }
 
             منتج
@@ -1084,11 +1348,139 @@ function renderCategories(){
 
 
         `
-      ).join('')
+      )
+      .join('')
 
     }
 
+
   `;
+
+}
+
+
+/* =========================
+   FEATURED
+========================= */
+
+function getFeaturedSection(){
+
+  return firstEl(
+
+    '#featured',
+
+    '#featuredSection',
+
+    '#selectedProducts',
+
+    '#recommended'
+
+  );
+
+}
+
+
+function getFeaturedGrid(){
+
+  return firstEl(
+
+    '#featuredGrid',
+
+    '#featuredProductsGrid',
+
+    '#selectedGrid',
+
+    '#selectedProductsGrid',
+
+    '#recommendedGrid'
+
+  )
+
+  ||
+
+  getFeaturedSection()
+    ?.querySelector(
+      '.product-grid'
+    );
+
+}
+
+
+function renderFeatured(){
+
+  const section =
+    getFeaturedSection();
+
+
+  const grid =
+    getFeaturedGrid();
+
+
+  if(
+    !grid
+  ){
+
+    return;
+
+  }
+
+
+  const arr =
+
+    state.products
+
+    .filter(
+      p =>
+        p.featured
+    )
+
+    .slice(
+      0,
+      8
+    );
+
+
+  grid.innerHTML =
+
+    arr
+
+    .map(
+      productCard
+    )
+
+    .join('');
+
+
+  const empty =
+    firstEl(
+
+      '#featuredEmpty',
+
+      '#selectedEmpty',
+
+      '#recommendedEmpty'
+
+    );
+
+
+  if(
+    empty
+  ){
+
+    empty.hidden =
+      !!arr.length;
+
+  }
+
+
+  if(
+    section
+  ){
+
+    section.hidden =
+      !arr.length;
+
+  }
 
 }
 
@@ -1107,29 +1499,44 @@ function renderOffers(){
     $('#offersEmpty');
 
 
-  if(!grid){
+  if(
+    !grid
+  ){
+
     return;
+
   }
 
 
   const arr =
+
     state.products
-      .filter(
-        p => p.offer
-      )
-      .slice(
-        0,
-        8
-      );
+
+    .filter(
+      p =>
+        p.offer
+    )
+
+    .slice(
+      0,
+      8
+    );
 
 
   grid.innerHTML =
+
     arr
-      .map(productCard)
-      .join('');
+
+    .map(
+      productCard
+    )
+
+    .join('');
 
 
-  if(empty){
+  if(
+    empty
+  ){
 
     empty.hidden =
       !!arr.length;
@@ -1140,7 +1547,7 @@ function renderOffers(){
 
 
 /* =========================
-   BRAND + SORT
+   CATEGORY + BRAND + SORT
 ========================= */
 
 function renderSubfilters(){
@@ -1149,12 +1556,20 @@ function renderSubfilters(){
     $('#subfilters');
 
 
-  if(!box){
+  if(
+    !box
+  ){
+
     return;
+
   }
 
 
-  const list =
+  const cats =
+    categories();
+
+
+  const brandList =
     brands();
 
 
@@ -1165,58 +1580,90 @@ function renderSubfilters(){
   box.innerHTML = `
 
 
-    <div class="brand-filter">
+    <button
+
+      class="chip ${
+        state.category === 'الكل'
+        ? 'active'
+        : ''
+      }"
+
+      data-quick-category="الكل">
+
+      كل الأقسام
+
+    </button>
 
 
-      <button
+    ${
 
-        class="
-          chip
-          ${
-            state.brand === 'الكل'
-              ? 'active'
-              : ''
-          }
-        "
-
-        data-brand="الكل">
-
-        كل البراندات
-
-      </button>
+      cats.map(
+        c => `
 
 
-      ${
+        <button
 
-        list.map(
-          b => `
+          class="chip ${
+            state.category === c
+            ? 'active'
+            : ''
+          }"
 
+          data-quick-category="${esc(c)}">
 
-          <button
+          ${esc(c)}
 
-            class="
-              chip
-              ${
-                state.brand === b
-                  ? 'active'
-                  : ''
-              }
-            "
-
-            data-brand="${esc(b)}">
-
-            ${esc(b)}
-
-          </button>
+        </button>
 
 
-          `
-        ).join('')
+        `
+      )
+      .join('')
 
-      }
+    }
 
 
-    </div>
+    <button
+
+      class="chip ${
+        state.brand === 'الكل'
+        ? 'active'
+        : ''
+      }"
+
+      data-brand="الكل">
+
+      كل البراندات
+
+    </button>
+
+
+    ${
+
+      brandList.map(
+        b => `
+
+
+        <button
+
+          class="chip ${
+            state.brand === b
+            ? 'active'
+            : ''
+          }"
+
+          data-brand="${esc(b)}">
+
+          ${esc(b)}
+
+        </button>
+
+
+        `
+      )
+      .join('')
+
+    }
 
 
     <select
@@ -1228,8 +1675,8 @@ function renderSubfilters(){
         value="default"
         ${
           state.sort === 'default'
-            ? 'selected'
-            : ''
+          ? 'selected'
+          : ''
         }>
 
         الترتيب الافتراضي
@@ -1241,11 +1688,12 @@ function renderSubfilters(){
         value="price-low"
         ${
           state.sort === 'price-low'
-            ? 'selected'
-            : ''
+          ? 'selected'
+          : ''
         }>
 
-        السعر: الأقل إلى الأعلى
+        السعر:
+        الأقل إلى الأعلى
 
       </option>
 
@@ -1254,11 +1702,12 @@ function renderSubfilters(){
         value="price-high"
         ${
           state.sort === 'price-high'
-            ? 'selected'
-            : ''
+          ? 'selected'
+          : ''
         }>
 
-        السعر: الأعلى إلى الأقل
+        السعر:
+        الأعلى إلى الأقل
 
       </option>
 
@@ -1267,8 +1716,8 @@ function renderSubfilters(){
         value="name"
         ${
           state.sort === 'name'
-            ? 'selected'
-            : ''
+          ? 'selected'
+          : ''
         }>
 
         حسب الاسم
@@ -1278,13 +1727,14 @@ function renderSubfilters(){
 
     </select>
 
+
   `;
 
 }
 
 
 /* =========================
-   RENDER PRODUCTS
+   PRODUCTS
 ========================= */
 
 function renderProducts(){
@@ -1293,8 +1743,12 @@ function renderProducts(){
     $('#productsGrid');
 
 
-  if(!grid){
+  if(
+    !grid
+  ){
+
     return;
+
   }
 
 
@@ -1303,16 +1757,23 @@ function renderProducts(){
 
 
   grid.innerHTML =
+
     arr
-      .map(productCard)
-      .join('');
+
+    .map(
+      productCard
+    )
+
+    .join('');
 
 
   const empty =
     $('#productsEmpty');
 
 
-  if(empty){
+  if(
+    empty
+  ){
 
     empty.hidden =
       !!arr.length;
@@ -1324,7 +1785,9 @@ function renderProducts(){
     $('#productsCount');
 
 
-  if(count){
+  if(
+    count
+  ){
 
     count.textContent =
       `${arr.length} منتج`;
@@ -1368,7 +1831,9 @@ function renderProducts(){
     $('#productsTitle');
 
 
-  if(titleEl){
+  if(
+    titleEl
+  ){
 
     titleEl.textContent =
       title;
@@ -1389,6 +1854,8 @@ function renderAll(){
 
   renderCategories();
 
+  renderFeatured();
+
   renderOffers();
 
   renderProducts();
@@ -1399,7 +1866,7 @@ function renderAll(){
 
 
 /* =========================
-   CART QTY
+   CART
 ========================= */
 
 function cartQty(id){
@@ -1421,76 +1888,69 @@ function cartQty(id){
 }
 
 
-/* =========================
-   CART DATA
-========================= */
-
 function cartData(){
 
   return state.cart
 
-    .map(
-      x => ({
+  .map(
+    x => ({
 
-        p:
-          byId(x.id),
+      p:
+        byId(
+          x.id
+        ),
 
-        qty:
-          x.qty
+      qty:
+        x.qty
 
-      })
-    )
+    })
+  )
 
-    .filter(
-      x => x.p
-    );
+  .filter(
+    x =>
+      x.p
+  );
 
 }
 
-
-/* =========================
-   UPDATE CART UI
-========================= */
 
 function updateCartUI(){
 
   const n =
+
     state.cart.reduce(
-      (sum, x) =>
+
+      (sum,x) =>
         sum + x.qty,
+
       0
+
     );
 
 
-  const cartCount =
-    $('#cartCount');
+  if(
+    $('#cartCount')
+  ){
 
-
-  const bottomCartCount =
-    $('#bottomCartCount');
-
-
-  if(cartCount){
-
-    cartCount.textContent =
+    $('#cartCount')
+      .textContent =
       n;
 
   }
 
 
-  if(bottomCartCount){
+  if(
+    $('#bottomCartCount')
+  ){
 
-    bottomCartCount.textContent =
+    $('#bottomCartCount')
+      .textContent =
       n;
 
   }
 
 }
 
-
-/* =========================
-   SAVE CART
-========================= */
 
 function saveCart(){
 
@@ -1507,11 +1967,11 @@ function saveCart(){
 
   updateCartUI();
 
-
   renderProducts();
 
-
   renderOffers();
+
+  renderFeatured();
 
 
   if(
@@ -1526,16 +1986,21 @@ function saveCart(){
 
 
 /* =========================
-   ADD
+   ADD PRODUCT
 ========================= */
 
-function add(id, n = 1){
+function add(
+  id,
+  n = 1
+){
 
   const product =
     byId(id);
 
 
-  if(!product){
+  if(
+    !product
+  ){
 
     return;
 
@@ -1574,6 +2039,7 @@ function add(id, n = 1){
 
 
   const allowedQty =
+
     Math.min(
 
       currentQty + n,
@@ -1584,6 +2050,7 @@ function add(id, n = 1){
 
 
   const x =
+
     state.cart.find(
 
       i =>
@@ -1593,7 +2060,9 @@ function add(id, n = 1){
     );
 
 
-  if(x){
+  if(
+    x
+  ){
 
     x.qty =
       allowedQty;
@@ -1607,6 +2076,7 @@ function add(id, n = 1){
       id,
 
       qty:
+
         Math.min(
           n,
           product.stock
@@ -1632,7 +2102,9 @@ function add(id, n = 1){
     detailQty &&
     String(
       state.openProductId
-    ) === String(id)
+    )
+    ===
+    String(id)
   ){
 
     detailQty.innerHTML =
@@ -1670,13 +2142,18 @@ function add(id, n = 1){
    SET QTY
 ========================= */
 
-function setQty(id, qty){
+function setQty(
+  id,
+  qty
+){
 
   const product =
     byId(id);
 
 
-  if(!product){
+  if(
+    !product
+  ){
 
     return;
 
@@ -1706,6 +2183,7 @@ function setQty(id, qty){
 
 
   const x =
+
     state.cart.find(
 
       i =>
@@ -1730,7 +2208,9 @@ function setQty(id, qty){
 
   }
 
-  else if(x){
+  else if(
+    x
+  ){
 
     x.qty =
       qty;
@@ -1739,6 +2219,7 @@ function setQty(id, qty){
 
 
   state.cart =
+
     state.cart.filter(
 
       i =>
@@ -1749,11 +2230,32 @@ function setQty(id, qty){
 
   saveCart();
 
+
+  const detailQty =
+    $('#detailQty');
+
+
+  if(
+    detailQty &&
+    String(
+      state.openProductId
+    ) === String(id) &&
+    qty > 0
+  ){
+
+    detailQty.innerHTML =
+      qtyControl(
+        id,
+        qty
+      );
+
+  }
+
 }
 
 
 /* =========================
-   RENDER CART
+   CART RENDER
 ========================= */
 
 function renderCart(){
@@ -1766,8 +2268,12 @@ function renderCart(){
     $('#cartItems');
 
 
-  if(!cartItems){
+  if(
+    !cartItems
+  ){
+
     return;
+
   }
 
 
@@ -1777,19 +2283,23 @@ function renderCart(){
 
     ? items.map(
 
-      ({p, qty}) => `
+      ({
+        p,
+        qty
+      }) => `
 
 
       <div class="cart-item">
 
 
         <img
+
           src="${esc(p.images[0])}"
+
           alt="${esc(p.name)}"
-          onerror="
-            this.onerror=null;
-            this.src='assets/logo.png'
-          "
+
+          onerror="this.onerror=null;this.src='assets/logo.png'"
+
         >
 
 
@@ -1822,18 +2332,23 @@ function renderCart(){
           }
 
 
-          ${qtyControl(
-            p.id,
-            qty
-          )}
+          ${
+            qtyControl(
+              p.id,
+              qty
+            )
+          }
 
 
         </div>
 
 
         <button
+
           type="button"
+
           class="remove-btn"
+
           data-remove="${esc(p.id)}">
 
           حذف
@@ -1859,16 +2374,16 @@ function renderCart(){
     `;
 
 
-  const pieces =
-    $('#cartPieces');
+  if(
+    $('#cartPieces')
+  ){
 
+    $('#cartPieces')
+      .textContent =
 
-  if(pieces){
-
-    pieces.textContent =
       items.reduce(
 
-        (sum, x) =>
+        (sum,x) =>
           sum + x.qty,
 
         0
@@ -1879,11 +2394,13 @@ function renderCart(){
 
 
   const total =
+
     items.reduce(
 
-      (sum, x) =>
+      (sum,x) =>
 
         sum +
+
         (
           x.p.price *
           x.qty
@@ -1894,13 +2411,13 @@ function renderCart(){
     );
 
 
-  const totalEl =
-    $('#cartTotal');
+  if(
+    $('#cartTotal')
+  ){
 
+    $('#cartTotal')
+      .textContent =
 
-  if(totalEl){
-
-    totalEl.textContent =
       money(total);
 
   }
@@ -1910,7 +2427,9 @@ function renderCart(){
     $('#cartClearTools');
 
 
-  if(!clearTools){
+  if(
+    !clearTools
+  ){
 
     cartItems.insertAdjacentHTML(
 
@@ -1946,7 +2465,9 @@ function renderCart(){
     $('[data-clear-cart]');
 
 
-  if(clearBtn){
+  if(
+    clearBtn
+  ){
 
     clearBtn.hidden =
       !items.length;
@@ -1966,7 +2487,9 @@ function openProduct(id){
     byId(id);
 
 
-  if(!p){
+  if(
+    !p
+  ){
 
     return;
 
@@ -2002,222 +2525,115 @@ function openProduct(id){
   content.innerHTML = `
 
 
-  <div class="product-detail">
+    <div class="product-detail">
 
 
-    <div class="gallery">
+      <div class="gallery">
 
 
-      <div class="gallery-main">
+        <div class="gallery-main">
 
 
-        <img
+          <img
 
-          id="galleryMain"
+            id="galleryMain"
 
-          src="${esc(p.images[0])}"
+            src="${esc(p.images[0])}"
 
-          alt="${esc(p.name)}"
+            alt="${esc(p.name)}"
 
-          onerror="
-            this.onerror=null;
-            this.src='assets/logo.png'
-          "
+            onerror="this.onerror=null;this.src='assets/logo.png'"
 
-        >
+          >
+
+
+        </div>
+
+
+        ${
+          p.images.length > 1
+
+          ? `
+
+            <div class="thumbs">
+
+
+              ${
+
+                p.images.map(
+
+                  (im,i) => `
+
+
+                  <button
+
+                    type="button"
+
+                    class="thumb ${
+                      i === 0
+                      ? 'active'
+                      : ''
+                    }"
+
+                    data-thumb="${esc(im)}">
+
+
+                    <img
+
+                      src="${esc(im)}"
+
+                      alt="صورة ${i + 1}"
+
+                    >
+
+
+                  </button>
+
+
+                  `
+                )
+                .join('')
+
+              }
+
+
+            </div>
+
+          `
+
+          : ''
+        }
 
 
       </div>
 
 
-      ${
-        p.images.length > 1
+      <div class="product-info">
 
-        ? `
 
-        <div class="thumbs">
+        <span class="section-kicker">
 
+          ${esc(
 
-          ${
+            [
+              p.category,
+              p.brand
+            ]
 
-            p.images.map(
+            .filter(Boolean)
 
-              (im, i) => `
+            .join(' • ')
 
+          )}
 
-              <button
+        </span>
 
-                type="button"
 
-                class="
-                  thumb
-                  ${
-                    i === 0
-                      ? 'active'
-                      : ''
-                  }
-                "
+        <h2>
 
-                data-thumb="${esc(im)}">
+          ${esc(p.name)}
 
-
-                <img
-
-                  src="${esc(im)}"
-
-                  alt="صورة ${i + 1}"
-
-                >
-
-
-              </button>
-
-
-              `
-
-            ).join('')
-
-          }
-
-
-        </div>
-
-        `
-
-        : ''
-      }
-
-
-    </div>
-
-
-    <div class="product-info">
-
-
-      <span class="section-kicker">
-
-        ${esc(
-
-          [
-            p.category,
-            p.brand
-          ]
-
-          .filter(Boolean)
-
-          .join(' • ')
-
-        )}
-
-      </span>
-
-
-      <h2>
-
-        ${esc(p.name)}
-
-      </h2>
-
-
-      ${
-        soldOut
-
-        ? `
-
-          <div class="discount-note">
-
-            نفذت الكمية
-
-          </div>
-
-        `
-
-        : ''
-      }
-
-
-      ${
-        p.price > 0
-
-        ? `
-
-        <div class="price-row">
-
-
-          <span class="price">
-
-            ${money(p.price)}
-
-          </span>
-
-
-          ${
-            p.old_price > p.price
-
-            ? `
-
-              <span class="old-price">
-
-                ${money(
-                  p.old_price
-                )}
-
-              </span>
-
-            `
-
-            : ''
-          }
-
-
-        </div>
-
-        `
-
-        : ''
-      }
-
-
-      ${
-        p.desc
-
-        ? `
-
-          <div class="full-desc">
-
-            ${esc(p.desc)}
-
-          </div>
-
-        `
-
-        : ''
-      }
-
-
-      <div class="detail-add">
-
-
-        <div id="detailQty">
-
-
-          ${
-            !soldOut &&
-            cartQty(p.id)
-
-            ? qtyControl(
-
-                p.id,
-
-                cartQty(p.id)
-
-              )
-
-            : ''
-          }
-
-
-        </div>
+        </h2>
 
 
         ${
@@ -2225,39 +2641,144 @@ function openProduct(id){
 
           ? `
 
-            <button
-              type="button"
-              class="add-btn"
-              disabled>
+            <div class="discount-note">
 
               نفذت الكمية
 
-            </button>
+            </div>
 
           `
 
-          : `
-
-            <button
-              type="button"
-              class="add-btn"
-              data-add="${esc(p.id)}">
-
-              أضف قطعة للسلة
-
-            </button>
-
-          `
+          : ''
         }
+
+
+        ${
+          p.price > 0
+
+          ? `
+
+            <div class="price-row">
+
+
+              <span class="price">
+
+                ${money(
+                  p.price
+                )}
+
+              </span>
+
+
+              ${
+                p.old_price > p.price
+
+                ? `
+
+                  <span class="old-price">
+
+                    ${money(
+                      p.old_price
+                    )}
+
+                  </span>
+
+                `
+
+                : ''
+              }
+
+
+            </div>
+
+          `
+
+          : ''
+        }
+
+
+        ${
+          p.desc
+
+          ? `
+
+            <div class="full-desc">
+
+              ${esc(
+                p.desc
+              )}
+
+            </div>
+
+          `
+
+          : ''
+        }
+
+
+        <div class="detail-add">
+
+
+          <div id="detailQty">
+
+
+            ${
+              !soldOut &&
+              cartQty(p.id)
+
+              ? qtyControl(
+
+                  p.id,
+
+                  cartQty(p.id)
+
+                )
+
+              : ''
+            }
+
+
+          </div>
+
+
+          ${
+            soldOut
+
+            ? `
+
+              <button
+                type="button"
+                class="add-btn"
+                disabled>
+
+                نفذت الكمية
+
+              </button>
+
+            `
+
+            : `
+
+              <button
+                type="button"
+                class="add-btn"
+                data-add="${esc(p.id)}">
+
+                أضف قطعة للسلة
+
+              </button>
+
+            `
+          }
+
+
+        </div>
 
 
       </div>
 
 
     </div>
-
-
-  </div>
 
 
   `;
@@ -2269,10 +2790,11 @@ function openProduct(id){
 
 
 /* =========================
-   OPEN CART
+   CART OPEN / CLOSE
 ========================= */
 
-let cartScrollY = 0;
+let cartScrollY =
+  0;
 
 
 function openCart(){
@@ -2300,10 +2822,6 @@ function openCart(){
 
 }
 
-
-/* =========================
-   CLOSE CART
-========================= */
 
 function closeCart(){
 
@@ -2352,7 +2870,9 @@ function checkout(e){
     cartData();
 
 
-  if(!items.length){
+  if(
+    !items.length
+  ){
 
     toast(
       'السلة فارغة'
@@ -2370,9 +2890,10 @@ function checkout(e){
 
 
   const beforeDiscount =
+
     items.reduce(
 
-      (sum, x) => {
+      (sum,x) => {
 
 
         const unit =
@@ -2402,9 +2923,10 @@ function checkout(e){
 
 
   const afterDiscount =
+
     items.reduce(
 
-      (sum, x) =>
+      (sum,x) =>
 
         sum +
 
@@ -2419,6 +2941,7 @@ function checkout(e){
 
 
   const saving =
+
     Math.max(
 
       0,
@@ -2430,7 +2953,9 @@ function checkout(e){
 
 
   const number =
+
     n =>
+
       Number(
         n || 0
       )
@@ -2440,9 +2965,10 @@ function checkout(e){
 
 
   const productsText =
+
     items.map(
 
-      (x, i) =>
+      (x,i) =>
 
         `${i + 1}) ${x.p.name}` +
 
@@ -2455,6 +2981,7 @@ function checkout(e){
         )}`
 
     )
+
     .join('\n');
 
 
@@ -2482,7 +3009,9 @@ function checkout(e){
     address;
 
 
-  if(landmark){
+  if(
+    landmark
+  ){
 
     fullAddress +=
       ` - أقرب نقطة دالة: ${landmark}`;
@@ -2506,7 +3035,9 @@ ${productsText}
 التوفير: ${number(saving)}`;
 
 
-  if(notes){
+  if(
+    notes
+  ){
 
     msg +=
       `\n\nملاحظات: ${notes}`;
@@ -2537,7 +3068,9 @@ function toast(msg){
     $('#toast');
 
 
-  if(!t){
+  if(
+    !t
+  ){
 
     return;
 
@@ -2577,13 +3110,17 @@ function toast(msg){
    DRAWER
 ========================= */
 
-function openDrawer(v = true){
+function openDrawer(
+  v = true
+){
 
   const drawer =
     $('#drawer');
 
 
-  if(!drawer){
+  if(
+    !drawer
+  ){
 
     return;
 
@@ -2619,17 +3156,25 @@ function storeView(mode){
   const hero =
     $('.hero');
 
+
   const toolbar =
     $('.toolbar');
+
 
   const offers =
     $('#offers');
 
+
   const categorySection =
     $('#categories');
 
+
   const products =
     $('#products');
+
+
+  const featured =
+    getFeaturedSection();
 
 
   if(
@@ -2644,6 +3189,13 @@ function storeView(mode){
 
     if(offers)
       offers.hidden = false;
+
+    if(featured)
+      featured.hidden =
+        !state.products.some(
+          p =>
+            p.featured
+        );
 
     if(categorySection)
       categorySection.hidden = false;
@@ -2667,6 +3219,9 @@ function storeView(mode){
     if(offers)
       offers.hidden = true;
 
+    if(featured)
+      featured.hidden = true;
+
     if(categorySection)
       categorySection.hidden = false;
 
@@ -2686,6 +3241,9 @@ function storeView(mode){
     if(offers)
       offers.hidden = true;
 
+    if(featured)
+      featured.hidden = true;
+
     if(toolbar)
       toolbar.hidden = false;
 
@@ -2701,7 +3259,7 @@ function storeView(mode){
 
 
 /* =========================
-   RESET FILTERS
+   RESET
 ========================= */
 
 function resetStoreFilters(){
@@ -2709,26 +3267,29 @@ function resetStoreFilters(){
   state.category =
     'الكل';
 
+
   state.brand =
     'الكل';
+
 
   state.offersOnly =
     false;
 
+
   state.search =
     '';
+
 
   state.sort =
     'default';
 
 
-  const search =
-    $('#searchInput');
+  if(
+    $('#searchInput')
+  ){
 
-
-  if(search){
-
-    search.value =
+    $('#searchInput')
+      .value =
       '';
 
   }
@@ -2779,15 +3340,15 @@ if(
 
 
 $$('.drawer-nav a')
-  .forEach(
 
-    a =>
+.forEach(
+  a =>
 
-      a.onclick =
-        () =>
-          openDrawer(false)
+    a.onclick =
+      () =>
+        openDrawer(false)
 
-  );
+);
 
 
 if(
@@ -2881,12 +3442,15 @@ document.addEventListener(
 
 
     const addBtn =
+
       e.target.closest(
         '[data-add]'
       );
 
 
-    if(addBtn){
+    if(
+      addBtn
+    ){
 
       add(
         addBtn.dataset.add
@@ -2898,12 +3462,15 @@ document.addEventListener(
 
 
     const inc =
+
       e.target.closest(
         '[data-inc]'
       );
 
 
-    if(inc){
+    if(
+      inc
+    ){
 
       setQty(
 
@@ -2921,12 +3488,15 @@ document.addEventListener(
 
 
     const dec =
+
       e.target.closest(
         '[data-dec]'
       );
 
 
-    if(dec){
+    if(
+      dec
+    ){
 
       setQty(
 
@@ -2944,12 +3514,15 @@ document.addEventListener(
 
 
     const remove =
+
       e.target.closest(
         '[data-remove]'
       );
 
 
-    if(remove){
+    if(
+      remove
+    ){
 
       setQty(
 
@@ -2965,12 +3538,15 @@ document.addEventListener(
 
 
     const clear =
+
       e.target.closest(
         '[data-clear-cart]'
       );
 
 
-    if(clear){
+    if(
+      clear
+    ){
 
       if(
         state.cart.length
@@ -2998,12 +3574,15 @@ document.addEventListener(
 
 
     const product =
+
       e.target.closest(
         '[data-open-product]'
       );
 
 
-    if(product){
+    if(
+      product
+    ){
 
       openProduct(
         product.dataset.openProduct
@@ -3015,6 +3594,7 @@ document.addEventListener(
 
 
     const home =
+
       e.target.closest(
 
         'a[href="#home"], [data-go-home]'
@@ -3022,7 +3602,9 @@ document.addEventListener(
       );
 
 
-    if(home){
+    if(
+      home
+    ){
 
       e.preventDefault();
 
@@ -3037,9 +3619,9 @@ document.addEventListener(
 
       window.scrollTo({
 
-        top: 0,
+        top:0,
 
-        behavior: 'smooth'
+        behavior:'smooth'
 
       });
 
@@ -3050,6 +3632,7 @@ document.addEventListener(
 
 
     const categoriesNav =
+
       e.target.closest(
 
         'a[href="#categories"], [data-go-categories]'
@@ -3057,7 +3640,9 @@ document.addEventListener(
       );
 
 
-    if(categoriesNav){
+    if(
+      categoriesNav
+    ){
 
       e.preventDefault();
 
@@ -3065,8 +3650,10 @@ document.addEventListener(
       state.category =
         'الكل';
 
+
       state.brand =
         'الكل';
+
 
       state.offersOnly =
         false;
@@ -3083,9 +3670,9 @@ document.addEventListener(
       $('#categories')
         ?.scrollIntoView({
 
-          behavior: 'smooth',
+          behavior:'smooth',
 
-          block: 'start'
+          block:'start'
 
         });
 
@@ -3096,12 +3683,15 @@ document.addEventListener(
 
 
     const category =
+
       e.target.closest(
         '[data-category]'
       );
 
 
-    if(category){
+    if(
+      category
+    ){
 
       state.category =
         category.dataset.category;
@@ -3129,9 +3719,9 @@ document.addEventListener(
       $('#products')
         ?.scrollIntoView({
 
-          behavior: 'smooth',
+          behavior:'smooth',
 
-          block: 'start'
+          block:'start'
 
         });
 
@@ -3141,13 +3731,48 @@ document.addEventListener(
     }
 
 
+    const quickCategory =
+
+      e.target.closest(
+        '[data-quick-category]'
+      );
+
+
+    if(
+      quickCategory
+    ){
+
+      state.category =
+        quickCategory
+          .dataset
+          .quickCategory;
+
+
+      state.offersOnly =
+        false;
+
+
+      renderCategories();
+
+
+      renderProducts();
+
+
+      return;
+
+    }
+
+
     const brand =
+
       e.target.closest(
         '[data-brand]'
       );
 
 
-    if(brand){
+    if(
+      brand
+    ){
 
       state.brand =
         brand.dataset.brand;
@@ -3166,12 +3791,15 @@ document.addEventListener(
 
 
     const offers =
+
       e.target.closest(
         '[data-filter-offers]'
       );
 
 
-    if(offers){
+    if(
+      offers
+    ){
 
       state.offersOnly =
         true;
@@ -3202,39 +3830,40 @@ document.addEventListener(
 
 
     const thumb =
+
       e.target.closest(
         '[data-thumb]'
       );
 
 
-    if(thumb){
+    if(
+      thumb
+    ){
 
-      const main =
-        $('#galleryMain');
+      if(
+        $('#galleryMain')
+      ){
 
-
-      if(main){
-
-        main.src =
+        $('#galleryMain')
+          .src =
           thumb.dataset.thumb;
 
       }
 
 
       $$('.thumb')
-        .forEach(
 
-          x =>
+      .forEach(
+        x =>
 
-            x.classList.toggle(
+          x.classList.toggle(
 
-              'active',
+            'active',
 
-              x === thumb
+            x === thumb
 
-            )
-
-        );
+          )
+      );
 
 
       return;
@@ -3243,19 +3872,23 @@ document.addEventListener(
 
 
     const close =
+
       e.target.closest(
         '[data-close-modal]'
       );
 
 
-    if(close){
+    if(
+      close
+    ){
 
       const id =
         close.dataset.closeModal;
 
 
       if(
-        id === 'cartModal'
+        id ===
+        'cartModal'
       ){
 
         closeCart();
@@ -3264,12 +3897,10 @@ document.addEventListener(
 
       else{
 
-        $('#'+id)?.close();
+        $('#'+id)
+          ?.close();
 
       }
-
-
-      return;
 
     }
 
@@ -3279,7 +3910,7 @@ document.addEventListener(
 
 
 /* =========================
-   SORT CHANGE
+   SORT
 ========================= */
 
 document.addEventListener(
@@ -3308,7 +3939,7 @@ document.addEventListener(
 
 
 /* =========================
-   CART CLOSE EVENT
+   CART CLOSE
 ========================= */
 
 $('#cartModal')
@@ -3351,7 +3982,7 @@ $('#cartModal')
 
 
 /* =========================
-   ONLINE / OFFLINE
+   ONLINE
 ========================= */
 
 window.addEventListener(
@@ -3364,7 +3995,8 @@ window.addEventListener(
       $('#offlineBar')
     ){
 
-      $('#offlineBar').hidden =
+      $('#offlineBar')
+        .hidden =
         true;
 
     }
@@ -3384,7 +4016,8 @@ window.addEventListener(
       $('#offlineBar')
     ){
 
-      $('#offlineBar').hidden =
+      $('#offlineBar')
+        .hidden =
         false;
 
     }
@@ -3398,7 +4031,8 @@ if(
   $('#offlineBar')
 ){
 
-  $('#offlineBar').hidden =
+  $('#offlineBar')
+    .hidden =
     navigator.onLine;
 
 }
@@ -3412,8 +4046,10 @@ if(
   $('#year')
 ){
 
-  $('#year').textContent =
-    new Date().getFullYear();
+  $('#year')
+    .textContent =
+    new Date()
+      .getFullYear();
 
 }
 
@@ -3423,7 +4059,8 @@ if(
 ========================= */
 
 if(
-  'serviceWorker' in navigator
+  'serviceWorker'
+  in navigator
 ){
 
   window.addEventListener(
