@@ -585,6 +585,15 @@ function productCard(p, index = 99){
           }"
           onerror="this.onerror=null;this.src='assets/logo.png'"
         >
+${
+  p.stock <= 0
+  ? `
+    <span class="offer-pill">
+      نفذت الكمية
+    </span>
+  `
+  : ''
+}
 
         ${
           p.offer
@@ -676,23 +685,29 @@ function productCard(p, index = 99){
         <div class="product-actions">
 
           ${
-            qty
-            ? qtyControl(
-                p.id,
-                qty
-              )
-            : `
-              <button
-                type="button"
-                class="add-btn"
-                data-add="${esc(p.id)}">
-
-                أضف للسلة
-
-              </button>
-            `
-          }
-
+  p.stock <= 0
+  ? `
+    <button
+      type="button"
+      class="add-btn"
+      disabled>
+      نفذت الكمية
+    </button>
+  `
+  : qty
+    ? qtyControl(
+        p.id,
+        qty
+      )
+    : `
+      <button
+        type="button"
+        class="add-btn"
+        data-add="${esc(p.id)}">
+        أضف للسلة
+      </button>
+    `
+}
           <button
             type="button"
             class="details-btn"
