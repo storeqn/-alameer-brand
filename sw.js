@@ -1,4 +1,4 @@
-const CACHE = 'alameer-brand-v6';
+const CACHE = 'alameer-brand-v7';
 const RUNTIME_CACHE = 'alameer-runtime-v1';
 
 const ASSETS = [
@@ -6,6 +6,7 @@ const ASSETS = [
   './index.html',
   './styles.css',
   './app.js',
+  './progressive-products.js',
   './config.js',
   './manifest.webmanifest',
   './assets/logo.png',
