@@ -57,8 +57,14 @@ window.STORE_CONFIG = {
 
   function saveFavs(){localStorage.setItem(favKey,JSON.stringify([...favorites]));updateFavUI()}
   function updateFavUI(){
-    document.querySelectorAll('[data-favorite-id]').forEach(b=>{const on=favorites.has(String(b.dataset.favoriteId));b.classList.toggle('active',on);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',on?'إزالة من المفضلة':'إضافة إلى المفضلة')});
-    const c=document.getElementById('favoritesCount');if(c)c.textContent=favorites.size;
+    document.querySelectorAll('[data-favorite-id]').forEach(b=>{
+      const on=favorites.has(String(b.dataset.favoriteId));
+      b.classList.toggle('active',on);
+      const symbol=on?'♥':'♡';
+      if(b.textContent!==symbol)b.textContent=symbol;
+      b.setAttribute('aria-label',on?'إزالة من المفضلة':'إضافة إلى المفضلة');
+    });
+    const c=document.getElementById('favoritesCount');if(c&&c.textContent!==String(favorites.size))c.textContent=favorites.size;
   }
   function decorateProducts(){
     document.querySelectorAll('.product-card').forEach(card=>{
@@ -114,6 +120,10 @@ window.STORE_CONFIG = {
 
   document.addEventListener('DOMContentLoaded',()=>{
     styles();addInstagram();addFavoritesHeader();addCouponBox();decorateProducts();
-    const observer=new MutationObserver(decorateProducts);const grid=document.getElementById('productsGrid');if(grid)observer.observe(grid,{childList:true,subtree:true});
+    const grid=document.getElementById('productsGrid');
+    if(grid){
+      const observer=new MutationObserver(()=>decorateProducts());
+      observer.observe(grid,{childList:true});
+    }
   });
 })();
