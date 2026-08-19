@@ -2,10 +2,12 @@
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwxFs75do4gJ941Agg0x6432z18qPjqkZ0ucutOCkaH-keZfDGP_xCPRhawbVXLIw8Y/exec';
   const CACHE_KEY = 'alameer_coupons_cache_v2';
   const CACHE_MAX_AGE = 5 * 60 * 1000;
+  const CART_REFRESH_AGE = 60 * 1000;
 
   let remoteCoupons = {};
   let couponsReady = false;
   let refreshPromise = null;
+  let lastRemoteRefresh = 0;
 
   function showMessage(message, type = 'info') {
     const result = document.getElementById('couponResult');
@@ -53,6 +55,7 @@
       if (!cached || !Array.isArray(cached.coupons)) return false;
 
       applyCouponsToStore(cached.coupons);
+      lastRemoteRefresh = Number(cached.savedAt || 0);
       return true;
     } catch (error) {
       console.warn('Coupons cache read error:', error);
@@ -87,6 +90,10 @@
     }
   }
 
+  function shouldRefreshForCart() {
+    return !lastRemoteRefresh || (Date.now() - lastRemoteRefresh >= CART_REFRESH_AGE);
+  }
+
   async function loadRemoteCoupons({ force = false } = {}) {
     if (refreshPromise) return refreshPromise;
 
@@ -109,6 +116,7 @@
         const coupons = data.coupons || [];
         applyCouponsToStore(coupons);
         saveCouponsCache(coupons);
+        lastRemoteRefresh = Date.now();
 
         return remoteCoupons;
       } catch (error) {
@@ -127,6 +135,11 @@
     })();
 
     return refreshPromise;
+  }
+
+  function refreshCouponsInBackground() {
+    if (!shouldRefreshForCart()) return;
+    loadRemoteCoupons({ force: true }).catch(() => {});
   }
 
   function explainCoupon(code) {
@@ -150,6 +163,16 @@
 
     const button = document.getElementById('applyCouponBtn');
     const input = document.getElementById('couponInput');
+
+    // كلما فتح المستخدم السلة، حدّث الكوبونات في الخلفية فقط.
+    // لا ننتظر هذا الطلب، لذلك فتح السلة وزر تطبيق يبقيان سريعين.
+    ['cartBtn', 'bottomCartBtn'].forEach(id => {
+      const cartButton = document.getElementById(id);
+      if (cartButton) {
+        cartButton.addEventListener('click', refreshCouponsInBackground, { passive: true });
+      }
+    });
+
     if (!button || !input) return;
 
     const original = button.onclick;
