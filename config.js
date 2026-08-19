@@ -60,8 +60,7 @@ window.STORE_CONFIG = {
     document.querySelectorAll('[data-favorite-id]').forEach(b=>{
       const on=favorites.has(String(b.dataset.favoriteId));
       b.classList.toggle('active',on);
-      const symbol=on?'♥':'♡';
-      if(b.textContent!==symbol)b.textContent=symbol;
+      b.innerHTML=on?'♥':'♡';
       b.setAttribute('aria-label',on?'إزالة من المفضلة':'إضافة إلى المفضلة');
     });
     const c=document.getElementById('favoritesCount');if(c&&c.textContent!==String(favorites.size))c.textContent=favorites.size;
@@ -70,7 +69,15 @@ window.STORE_CONFIG = {
     document.querySelectorAll('.product-card').forEach(card=>{
       if(card.querySelector('[data-favorite-id]'))return;
       const open=card.querySelector('[data-open-product]');if(!open)return;
-      const id=open.getAttribute('data-open-product');const b=document.createElement('button');b.type='button';b.className='favorite-btn';b.dataset.favoriteId=id;b.textContent=favorites.has(String(id))?'♥':'♡';b.setAttribute('aria-label','إضافة إلى المفضلة');open.appendChild(b);
+      const id=open.getAttribute('data-open-product');
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='favorite-btn';
+      b.dataset.favoriteId=id;
+      b.innerHTML=favorites.has(String(id))?'♥':'♡';
+      b.setAttribute('aria-label','إضافة إلى المفضلة');
+      b.setAttribute('data-no-open-product','true');
+      card.appendChild(b);
     });updateFavUI();
   }
   function addFavoritesHeader(){
@@ -85,8 +92,16 @@ window.STORE_CONFIG = {
     top.appendChild(b);
   }
   document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-favorite-id]');if(!b)return;e.preventDefault();e.stopPropagation();const id=String(b.dataset.favoriteId);favorites.has(id)?favorites.delete(id):favorites.add(id);saveFavs();notice(favorites.has(id)?'تمت الإضافة إلى المفضلة ♥':'تمت الإزالة من المفضلة');
-  });
+    const b=e.target.closest('[data-favorite-id]');
+    if(!b)return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    const id=String(b.dataset.favoriteId);
+    favorites.has(id)?favorites.delete(id):favorites.add(id);
+    saveFavs();
+    notice(favorites.has(id)?'تمت الإضافة إلى المفضلة ♥':'تمت الإزالة من المفضلة');
+  },true);
 
   function cartSubtotal(){
     try{return cartData().reduce((s,x)=>s+(Number(x.p.price)||0)*x.qty,0)}catch(_){return 0}
@@ -114,7 +129,7 @@ window.STORE_CONFIG = {
 
   function styles(){
     if(document.getElementById('storeExtrasStyles'))return;const s=document.createElement('style');s.id='storeExtrasStyles';s.textContent=`
-    .topbar-inner{position:relative}.instagram-header-btn{position:absolute;left:50px;top:50%;transform:translateY(-50%);width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;text-decoration:none;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.1);z-index:2}.instagram-header-btn svg,.instagram-copy-button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}.favorites-header-btn{position:absolute;left:94px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:12px;border:1px solid rgba(23,21,18,.1);background:#fff;font-size:22px;line-height:1;color:#b68b3d;z-index:2}.favorites-header-btn b{position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:10px;background:#b68b3d;color:#fff;font-size:10px;display:grid;place-items:center}.product-image-wrap{position:relative}.favorite-btn{position:absolute;top:9px;right:9px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.9);font-size:24px;color:#b68b3d;display:grid;place-items:center;z-index:4;box-shadow:0 5px 15px rgba(0,0,0,.08)}.favorite-btn.active{background:#fff;color:#c33}.instagram-order-tools{margin-top:10px;display:grid;gap:8px}.instagram-copy-button{width:100%;min-height:50px;border:0;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-weight:800;color:#fff;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}.instagram-open-button{min-height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:800;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.12)}.coupon-box{margin:14px 0;padding:13px;border:1px solid rgba(182,139,61,.25);background:#fffaf0;border-radius:16px}.coupon-box label{display:block;font-weight:800;margin-bottom:8px}.coupon-row{display:flex;gap:8px}.coupon-row input{min-width:0;flex:1;text-transform:uppercase}.coupon-row button{border:0;border-radius:12px;padding:0 16px;background:#171512;color:#fff;font-weight:800}.coupon-result{font-size:13px;margin-top:7px}.coupon-result.success{color:#177245}.coupon-result.error{color:#a52a2a}@media(max-width:520px){.instagram-header-btn{left:46px;width:36px;height:36px}.favorites-header-btn{left:88px;width:36px;height:36px}}
+    .topbar-inner{position:relative}.instagram-header-btn{position:absolute;left:50px;top:50%;transform:translateY(-50%);width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;text-decoration:none;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.1);z-index:2}.instagram-header-btn svg,.instagram-copy-button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}.favorites-header-btn{position:absolute;left:94px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:12px;border:1px solid rgba(23,21,18,.1);background:#fff;font-size:22px;line-height:1;color:#b68b3d;z-index:2}.favorites-header-btn b{position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:10px;background:#b68b3d;color:#fff;font-size:10px;display:grid;place-items:center}.product-card{position:relative}.favorite-btn{position:absolute;top:12px;left:12px;width:34px;height:34px;border:0;border-radius:10px;background:rgba(17,16,14,.78);color:#fff;font-size:21px;display:flex;align-items:center;justify-content:center;z-index:12;box-shadow:0 6px 16px rgba(0,0,0,.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.favorite-btn.active{background:#b68b3d;color:#fff}.favorite-btn:active{transform:scale(.92)}.instagram-order-tools{margin-top:10px;display:grid;gap:8px}.instagram-copy-button{width:100%;min-height:50px;border:0;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-weight:800;color:#fff;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}.instagram-open-button{min-height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:800;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.12)}.coupon-box{margin:14px 0;padding:13px;border:1px solid rgba(182,139,61,.25);background:#fffaf0;border-radius:16px}.coupon-box label{display:block;font-weight:800;margin-bottom:8px}.coupon-row{display:flex;gap:8px}.coupon-row input{min-width:0;flex:1;text-transform:uppercase}.coupon-row button{border:0;border-radius:12px;padding:0 16px;background:#171512;color:#fff;font-weight:800}.coupon-result{font-size:13px;margin-top:7px}.coupon-result.success{color:#177245}.coupon-result.error{color:#a52a2a}@media(max-width:520px){.instagram-header-btn{left:46px;width:36px;height:36px}.favorites-header-btn{left:88px;width:36px;height:36px}.favorite-btn{top:10px;left:10px;width:32px;height:32px;font-size:20px}}
     `;document.head.appendChild(s)
   }
 
