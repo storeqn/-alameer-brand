@@ -1,182 +1,119 @@
 window.STORE_CONFIG = {
   storeName: "الأمير براند",
-
   whatsapp: "9647733949777",
-
-  sheetCsvUrl:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQR4CDYOcGSOeHqY-WPr6a-dDdFGqt6f_-wxzTnIjw26haO3oeWZX4AkJ7dqIoBeXKBaNnldf1gu_8x/pub?output=csv",
-
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQR4CDYOcGSOeHqY-WPr6a-dDdFGqt6f_-wxzTnIjw26haO3oeWZX4AkJ7dqIoBeXKBaNnldf1gu_8x/pub?output=csv",
   currency: "د.ع",
-
   locale: "ar-IQ",
-
   logo: "./assets/logo.png",
-
   instagram: "https://www.instagram.com/alameer.iq1/",
-
   cacheKey: "alameer_products_v1",
-
+  coupons: {
+    "AMEER10": { type:"percent", value:10, min:0, active:true }
+  },
   demoProducts: []
 };
 
-
 /* =========================
-   INSTAGRAM ENHANCEMENTS
+   STORE EXTRAS: INSTAGRAM + FAVORITES + COUPONS
 ========================= */
-
 (() => {
   const instagramUrl = window.STORE_CONFIG.instagram;
+  const instagramIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.25"></circle><circle cx="17.4" cy="6.7" r="1"></circle></svg>`;
+  const favKey = 'alameer_favorites_v1';
+  let favorites = new Set(JSON.parse(localStorage.getItem(favKey) || '[]').map(String));
+  let activeCoupon = null;
 
-  const instagramIcon = `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
-      <circle cx="12" cy="12" r="4.25"></circle>
-      <circle cx="17.4" cy="6.7" r="1"></circle>
-    </svg>`;
-
-  function showInstagramToast(message){
-    const t = document.getElementById('toast');
-    if(!t) return;
-    t.textContent = message;
-    t.classList.add('show');
-    clearTimeout(t._instagramTimer);
-    t._instagramTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  function notice(message){
+    const t=document.getElementById('toast'); if(!t)return;
+    t.textContent=message;t.classList.add('show');clearTimeout(t._extraTimer);
+    t._extraTimer=setTimeout(()=>t.classList.remove('show'),3000);
   }
-
   async function copyText(text){
-    try{
-      await navigator.clipboard.writeText(text);
-      return true;
-    }catch(_){
-      try{
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.setAttribute('readonly','');
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        const ok = document.execCommand('copy');
-        ta.remove();
-        return ok;
-      }catch(__){ return false; }
+    try{await navigator.clipboard.writeText(text);return true}catch(_){
+      try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok}catch(__){return false}
     }
   }
-
   function captureCheckoutMessage(form){
-    if(typeof checkout !== 'function') return '';
-    let capturedUrl = '';
-    const originalOpen = window.open;
-    try{
-      window.open = url => { capturedUrl = String(url || ''); return null; };
-      checkout({preventDefault(){}, currentTarget:form});
-    }finally{
-      window.open = originalOpen;
+    if(typeof checkout!=='function')return '';
+    let captured='';const original=window.open;
+    try{window.open=url=>{captured=String(url||'');return null};checkout({preventDefault(){},currentTarget:form})}finally{window.open=original}
+    if(!captured)return '';
+    try{return new URL(captured).searchParams.get('text')||''}catch(_){return ''}
+  }
+  function addInstagram(){
+    const top=document.querySelector('.topbar-inner'),cart=document.getElementById('cartBtn');
+    if(top&&!document.getElementById('instagramHeaderBtn')){
+      const a=document.createElement('a');a.id='instagramHeaderBtn';a.className='instagram-header-btn';a.href=instagramUrl;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','إنستغرام الأمير براند');a.innerHTML=instagramIcon;
+      if(cart)top.insertBefore(a,cart);else top.appendChild(a);
     }
-    if(!capturedUrl) return '';
-    try{
-      const url = new URL(capturedUrl);
-      return url.searchParams.get('text') || '';
-    }catch(_){
-      const match = capturedUrl.match(/[?&]text=([^&]+)/);
-      return match ? decodeURIComponent(match[1]) : '';
+    const form=document.getElementById('checkoutForm');
+    if(form&&!document.getElementById('instagramCopyBtn')){
+      const wa=form.querySelector('.checkout-button'),wrap=document.createElement('div');wrap.className='instagram-order-tools';
+      wrap.innerHTML=`<button type="button" id="instagramCopyBtn" class="instagram-copy-button">${instagramIcon}<span>نسخ الطلب للإنستغرام</span></button><a class="instagram-open-button" href="${instagramUrl}" target="_blank" rel="noopener noreferrer">فتح إنستغرام ولصق الطلب</a>`;
+      wrap.querySelector('#instagramCopyBtn').onclick=async()=>{if(!form.reportValidity())return;let msg=captureCheckoutMessage(form);if(activeCoupon&&msg)msg=applyCouponToMessage(msg);if(!msg){notice('تعذر تجهيز الطلب');return}notice(await copyText(msg)?'تم نسخ الطلب ✓ افتح إنستغرام والصقه':'تعذر النسخ تلقائياً')};
+      if(wa)wa.insertAdjacentElement('afterend',wrap);else form.appendChild(wrap);
     }
   }
 
-  function addInstagramHeaderButton(){
-    const topbarInner = document.querySelector('.topbar-inner');
-    const cartButton = document.getElementById('cartBtn');
-    if(!topbarInner || document.getElementById('instagramHeaderBtn')) return;
+  function saveFavs(){localStorage.setItem(favKey,JSON.stringify([...favorites]));updateFavUI()}
+  function updateFavUI(){
+    document.querySelectorAll('[data-favorite-id]').forEach(b=>{const on=favorites.has(String(b.dataset.favoriteId));b.classList.toggle('active',on);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',on?'إزالة من المفضلة':'إضافة إلى المفضلة')});
+    const c=document.getElementById('favoritesCount');if(c)c.textContent=favorites.size;
+  }
+  function decorateProducts(){
+    document.querySelectorAll('.product-card').forEach(card=>{
+      if(card.querySelector('[data-favorite-id]'))return;
+      const open=card.querySelector('[data-open-product]');if(!open)return;
+      const id=open.getAttribute('data-open-product');const b=document.createElement('button');b.type='button';b.className='favorite-btn';b.dataset.favoriteId=id;b.textContent=favorites.has(String(id))?'♥':'♡';b.setAttribute('aria-label','إضافة إلى المفضلة');open.appendChild(b);
+    });updateFavUI();
+  }
+  function addFavoritesHeader(){
+    const top=document.querySelector('.topbar-inner');if(!top||document.getElementById('favoritesHeaderBtn'))return;
+    const b=document.createElement('button');b.type='button';b.id='favoritesHeaderBtn';b.className='favorites-header-btn';b.innerHTML=`♥<b id="favoritesCount">${favorites.size}</b>`;b.setAttribute('aria-label','المفضلة');
+    b.onclick=()=>{
+      if(!favorites.size){notice('لم تضف منتجات إلى المفضلة بعد');return}
+      if(typeof state!=='undefined'){state.category='الكل';state.brand='الكل';state.offersOnly=false;state.search='';}
+      document.querySelectorAll('.product-card').forEach(card=>{const id=card.querySelector('[data-open-product]')?.getAttribute('data-open-product');card.style.display=favorites.has(String(id))?'':'none'});
+      document.getElementById('products')?.scrollIntoView({behavior:'smooth'});notice(`المفضلة: ${favorites.size} منتج`);
+    };
+    top.appendChild(b);
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('[data-favorite-id]');if(!b)return;e.preventDefault();e.stopPropagation();const id=String(b.dataset.favoriteId);favorites.has(id)?favorites.delete(id):favorites.add(id);saveFavs();notice(favorites.has(id)?'تمت الإضافة إلى المفضلة ♥':'تمت الإزالة من المفضلة');
+  });
 
-    const link = document.createElement('a');
-    link.id = 'instagramHeaderBtn';
-    link.className = 'instagram-header-btn';
-    link.href = instagramUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.setAttribute('aria-label','حساب الأمير براند على إنستغرام');
-    link.title = '@alameer.iq1';
-    link.innerHTML = instagramIcon;
-
-    if(cartButton) topbarInner.insertBefore(link, cartButton);
-    else topbarInner.appendChild(link);
+  function cartSubtotal(){
+    try{return cartData().reduce((s,x)=>s+(Number(x.p.price)||0)*x.qty,0)}catch(_){return 0}
+  }
+  function couponDiscount(total){if(!activeCoupon)return 0;return activeCoupon.type==='percent'?Math.round(total*activeCoupon.value/100):Math.min(total,activeCoupon.value)}
+  function applyCouponToMessage(msg){
+    const total=cartSubtotal(),discount=couponDiscount(total),final=Math.max(0,total-discount);
+    return `${msg}\n\nكوبون الخصم: ${activeCoupon.code}\nخصم الكوبون: ${discount.toLocaleString('en-US')} د.ع\nالإجمالي النهائي بعد الكوبون: ${final.toLocaleString('en-US')} د.ع`;
+  }
+  function addCouponBox(){
+    const form=document.getElementById('checkoutForm');if(!form||document.getElementById('couponBox'))return;
+    const firstButton=form.querySelector('.checkout-button');const box=document.createElement('div');box.id='couponBox';box.className='coupon-box';box.innerHTML=`<label>🎟️ هل لديك كوبون خصم؟</label><div class="coupon-row"><input id="couponInput" type="text" placeholder="أدخل كود الخصم" autocomplete="off"><button type="button" id="applyCouponBtn">تطبيق</button></div><div id="couponResult" class="coupon-result"></div>`;
+    if(firstButton)form.insertBefore(box,firstButton);else form.appendChild(box);
+    box.querySelector('#applyCouponBtn').onclick=()=>{
+      const code=box.querySelector('#couponInput').value.trim().toUpperCase(),cp=window.STORE_CONFIG.coupons?.[code],total=cartSubtotal(),result=box.querySelector('#couponResult');
+      if(!cp||cp.active===false){activeCoupon=null;result.textContent='الكوبون غير صحيح أو غير فعال';result.className='coupon-result error';return}
+      if(total<Number(cp.min||0)){activeCoupon=null;result.textContent=`الحد الأدنى لاستخدام الكوبون ${Number(cp.min).toLocaleString('en-US')} د.ع`;result.className='coupon-result error';return}
+      activeCoupon={...cp,code};const d=couponDiscount(total);result.textContent=`✓ تم تطبيق ${code} — خصم ${d.toLocaleString('en-US')} د.ع`;result.className='coupon-result success';notice('تم تطبيق كوبون الخصم ✓');
+    };
+    form.addEventListener('submit',e=>{
+      if(!activeCoupon)return;
+      e.preventDefault();let msg=captureCheckoutMessage(form);if(!msg)return;msg=applyCouponToMessage(msg);window.open(`https://wa.me/${window.STORE_CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`,'_blank','noopener');
+    },true);
   }
 
-  function addInstagramCheckoutButtons(){
-    const form = document.getElementById('checkoutForm');
-    if(!form || document.getElementById('instagramCopyBtn')) return;
-
-    const whatsappButton = form.querySelector('.checkout-button');
-    const wrap = document.createElement('div');
-    wrap.className = 'instagram-order-tools';
-    wrap.innerHTML = `
-      <button type="button" id="instagramCopyBtn" class="instagram-copy-button">
-        ${instagramIcon}
-        <span>نسخ الطلب للإنستغرام</span>
-      </button>
-      <a class="instagram-open-button" href="${instagramUrl}" target="_blank" rel="noopener noreferrer">
-        فتح إنستغرام ولصق الطلب
-      </a>`;
-
-    const copyBtn = wrap.querySelector('#instagramCopyBtn');
-    copyBtn.addEventListener('click', async () => {
-      if(!form.reportValidity()) return;
-      const message = captureCheckoutMessage(form);
-      if(!message){
-        showInstagramToast('تعذر تجهيز الطلب. تأكد من وجود منتجات في السلة.');
-        return;
-      }
-      const copied = await copyText(message);
-      showInstagramToast(
-        copied
-          ? 'تم نسخ الطلب ✓ الآن اضغط «فتح إنستغرام» ثم الصقه في الرسالة'
-          : 'تعذر النسخ تلقائياً. حاول مرة أخرى.'
-      );
-    });
-
-    if(whatsappButton) whatsappButton.insertAdjacentElement('afterend', wrap);
-    else form.appendChild(wrap);
+  function styles(){
+    if(document.getElementById('storeExtrasStyles'))return;const s=document.createElement('style');s.id='storeExtrasStyles';s.textContent=`
+    .topbar-inner{position:relative}.instagram-header-btn{position:absolute;left:50px;top:50%;transform:translateY(-50%);width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;text-decoration:none;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.1);z-index:2}.instagram-header-btn svg,.instagram-copy-button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}.favorites-header-btn{position:absolute;left:94px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:12px;border:1px solid rgba(23,21,18,.1);background:#fff;font-size:22px;line-height:1;color:#b68b3d;z-index:2}.favorites-header-btn b{position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:10px;background:#b68b3d;color:#fff;font-size:10px;display:grid;place-items:center}.product-image-wrap{position:relative}.favorite-btn{position:absolute;top:9px;right:9px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.9);font-size:24px;color:#b68b3d;display:grid;place-items:center;z-index:4;box-shadow:0 5px 15px rgba(0,0,0,.08)}.favorite-btn.active{background:#fff;color:#c33}.instagram-order-tools{margin-top:10px;display:grid;gap:8px}.instagram-copy-button{width:100%;min-height:50px;border:0;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-weight:800;color:#fff;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}.instagram-open-button{min-height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:800;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.12)}.coupon-box{margin:14px 0;padding:13px;border:1px solid rgba(182,139,61,.25);background:#fffaf0;border-radius:16px}.coupon-box label{display:block;font-weight:800;margin-bottom:8px}.coupon-row{display:flex;gap:8px}.coupon-row input{min-width:0;flex:1;text-transform:uppercase}.coupon-row button{border:0;border-radius:12px;padding:0 16px;background:#171512;color:#fff;font-weight:800}.coupon-result{font-size:13px;margin-top:7px}.coupon-result.success{color:#177245}.coupon-result.error{color:#a52a2a}@media(max-width:520px){.instagram-header-btn{left:46px;width:36px;height:36px}.favorites-header-btn{left:88px;width:36px;height:36px}}
+    `;document.head.appendChild(s)
   }
 
-  function addInstagramStyles(){
-    if(document.getElementById('instagramEnhancementStyles')) return;
-    const style = document.createElement('style');
-    style.id = 'instagramEnhancementStyles';
-    style.textContent = `
-      .topbar-inner{position:relative;}
-      .instagram-header-btn{
-        position:absolute;left:50px;top:50%;transform:translateY(-50%);
-        width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;
-        border-radius:12px;text-decoration:none;color:#171512;background:rgba(255,255,255,.78);
-        border:1px solid rgba(23,21,18,.10);box-shadow:0 8px 22px rgba(38,30,18,.07);
-        -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:2;
-      }
-      .instagram-header-btn:active{opacity:.78;}
-      .instagram-header-btn svg,.instagram-copy-button svg{
-        width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;
-        stroke-linecap:round;stroke-linejoin:round;
-      }
-      .instagram-order-tools{margin-top:10px;display:grid;gap:8px;}
-      .instagram-copy-button{
-        width:100%;min-height:50px;border:0;border-radius:16px;display:flex;align-items:center;
-        justify-content:center;gap:9px;cursor:pointer;font:inherit;font-weight:800;color:#fff;
-        background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);
-        box-shadow:0 10px 26px rgba(131,58,180,.20);
-      }
-      .instagram-copy-button:active{transform:scale(.985);}
-      .instagram-open-button{
-        min-height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-        text-decoration:none;font-weight:800;color:#171512;background:#fff;border:1px solid rgba(23,21,18,.12);
-      }
-      @media(max-width:520px){
-        .instagram-header-btn{left:46px;width:36px;height:36px;border-radius:11px;}
-      }`;
-    document.head.appendChild(style);
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    addInstagramStyles();
-    addInstagramHeaderButton();
-    addInstagramCheckoutButtons();
+  document.addEventListener('DOMContentLoaded',()=>{
+    styles();addInstagram();addFavoritesHeader();addCouponBox();decorateProducts();
+    const observer=new MutationObserver(decorateProducts);const grid=document.getElementById('productsGrid');if(grid)observer.observe(grid,{childList:true,subtree:true});
   });
 })();
