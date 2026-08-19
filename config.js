@@ -204,10 +204,17 @@ window.STORE_CONFIG = {
     const style = document.createElement('style');
     style.id = 'instagramEnhancementStyles';
     style.textContent = `
+      .topbar-inner{
+        position:relative;
+      }
+
       .instagram-header-btn{
+        position:absolute;
+        left:50px;
+        top:50%;
+        transform:translateY(-50%);
         width:38px;
         height:38px;
-        flex:0 0 38px;
         display:inline-flex;
         align-items:center;
         justify-content:center;
@@ -219,11 +226,12 @@ window.STORE_CONFIG = {
         box-shadow:0 8px 22px rgba(38,30,18,.07);
         -webkit-backdrop-filter:blur(12px);
         backdrop-filter:blur(12px);
-        transition:transform .18s ease, box-shadow .18s ease;
+        transition:box-shadow .18s ease;
+        z-index:2;
       }
 
       .instagram-header-btn:active{
-        transform:scale(.94);
+        opacity:.78;
       }
 
       .instagram-header-btn svg{
@@ -270,9 +278,9 @@ window.STORE_CONFIG = {
 
       @media (max-width:520px){
         .instagram-header-btn{
+          left:46px;
           width:36px;
           height:36px;
-          flex-basis:36px;
           border-radius:11px;
         }
       }
