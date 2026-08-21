@@ -1,4 +1,4 @@
-const CACHE = 'alameer-brand-v7';
+const CACHE = 'alameer-brand-v8';
 const RUNTIME_CACHE = 'alameer-runtime-v1';
 
 const ASSETS = [
@@ -79,8 +79,6 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // بيانات Google Sheets: تجاهل معامل كسر الكاش (_=timestamp)
-  // واعرض آخر نسخة فوراً، ثم حدّثها في الخلفية.
   if(isSheetRequest(url)){
     event.respondWith(
       staleWhileRevalidate(request, sheetCacheKey(request))
@@ -89,7 +87,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // صور المنتجات الخارجية: اعرض الصورة المحفوظة فوراً إن وجدت.
   if(request.destination === 'image'){
     event.respondWith(
       staleWhileRevalidate(request)
@@ -98,7 +95,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // ملفات المتجر الأساسية: Cache First لتسريع فتح التطبيق.
   if(url.origin === self.location.origin){
     event.respondWith(
       caches.match(request)
