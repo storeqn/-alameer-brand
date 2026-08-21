@@ -1,5 +1,5 @@
-const CACHE = 'alameer-brand-v8';
-const RUNTIME_CACHE = 'alameer-runtime-v1';
+const CACHE = 'alameer-brand-v9';
+const RUNTIME_CACHE = 'alameer-runtime-v2';
 
 const ASSETS = [
   './',
@@ -40,26 +40,29 @@ function isSheetRequest(url){
          url.hostname.includes('googleusercontent.com');
 }
 
-function sheetCacheKey(request){
-  const url = new URL(request.url);
-  url.searchParams.delete('_');
-  return new Request(url.toString(), {
-    method: 'GET',
-    headers: request.headers,
-    mode: request.mode,
-    credentials: request.credentials,
-    redirect: request.redirect
-  });
+async function networkFirst(request){
+  const cache = await caches.open(RUNTIME_CACHE);
+  try{
+    const response = await fetch(request, { cache: 'no-store' });
+    if(response && (response.ok || response.type === 'opaque')){
+      cache.put(request, response.clone()).catch(() => {});
+    }
+    return response;
+  }catch(error){
+    const cached = await cache.match(request);
+    if(cached) return cached;
+    throw error;
+  }
 }
 
-async function staleWhileRevalidate(request, cacheKey = request){
+async function staleWhileRevalidate(request){
   const cache = await caches.open(RUNTIME_CACHE);
-  const cached = await cache.match(cacheKey);
+  const cached = await cache.match(request);
 
   const networkPromise = fetch(request)
     .then(response => {
       if(response && (response.ok || response.type === 'opaque')){
-        cache.put(cacheKey, response.clone()).catch(() => {});
+        cache.put(request, response.clone()).catch(() => {});
       }
       return response;
     });
@@ -79,10 +82,12 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
+  // Product/Sheet data must always prefer the newest network response.
+  // This prevents old stock values (for example stock=0) from being hidden by stale cache.
   if(isSheetRequest(url)){
     event.respondWith(
-      staleWhileRevalidate(request, sheetCacheKey(request))
-        .catch(() => caches.match(sheetCacheKey(request)))
+      networkFirst(request)
+        .catch(() => caches.match(request))
     );
     return;
   }
