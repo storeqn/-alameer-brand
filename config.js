@@ -13,6 +13,14 @@ window.STORE_CONFIG = {
   demoProducts: []
 };
 
+/* تحميل إصلاح حفظ القسم الفرعي في صفحة الإدارة فقط */
+if (/(^|\/)admin\.html$/i.test(location.pathname)) {
+  const adminFix = document.createElement('script');
+  adminFix.src = './admin-fix.js?v=2';
+  adminFix.defer = true;
+  document.head.appendChild(adminFix);
+}
+
 /* =========================
    STORE EXTRAS: INSTAGRAM + FAVORITES + COUPONS
 ========================= */
