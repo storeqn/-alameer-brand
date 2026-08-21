@@ -118,7 +118,7 @@
     }
   }, true);
 
-  /* Add subcategory text to product cards without changing app.js */
+  /* Add subcategory text to product cards without changing the visual design */
   const baseProductCard = productCard;
   productCard = function(p, index = 99){
     let html = baseProductCard(p, index);
@@ -131,8 +131,14 @@
   };
 })();
 
+/* =========================================================
+   FAST PROGRESSIVE PRODUCT RENDERING
+   - Only a small first batch is inserted into the DOM.
+   - More products appear automatically while scrolling.
+   - The visible design is unchanged.
+========================================================= */
 (() => {
-  const PAGE_SIZE = 24;
+  const PAGE_SIZE = 16;
 
   let visibleProducts = PAGE_SIZE;
   let lastFilterKey = '';
@@ -196,7 +202,7 @@
       },
       {
         root: null,
-        rootMargin: '700px 0px',
+        rootMargin: '500px 0px',
         threshold: 0.01
       }
     );
@@ -265,6 +271,38 @@
   };
 })();
 
+/* =========================================================
+   INSTANT CACHE-FIRST FIRST PAINT
+   app.js has already started one fresh Google Sheets request.
+   While that request is in flight, show the last good product list
+   immediately from localStorage. When the single network request
+   finishes, app.js replaces it with the newest data automatically.
+========================================================= */
+(() => {
+  const loading = document.querySelector('#loadingCard');
+  const cacheKey = C?.cacheKey || 'alameer_products_v1';
+
+  try{
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+
+    if(Array.isArray(cached) && cached.length){
+      state.products = cached;
+
+      if(loading){
+        loading.hidden = true;
+      }
+
+      /* Paint cached content on the next frame so the shell appears first. */
+      requestAnimationFrame(() => {
+        renderAll();
+      });
+    }
+  }
+  catch(error){
+    console.warn('Product cache unavailable:', error);
+  }
+})();
+
 /* Glass bottom navigation enhancement */
 (() => {
   const style = document.createElement('style');
@@ -331,7 +369,7 @@
   items.forEach(item => item.addEventListener('click', () => setActive(item)));
 })();
 
-/* Re-load once after the subcategory normalizer is installed.
-   app.js starts the first load before this file runs, so without this
-   refresh existing products do not contain sub_category. */
-loadProducts();
+/* IMPORTANT: Do not call loadProducts() here.
+   app.js already performs exactly one fresh background request.
+   Calling it again was the main cause of duplicated network work,
+   duplicated rendering, and slower image/product display. */
