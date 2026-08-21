@@ -330,3 +330,8 @@
   setActive(nav.querySelector('[data-go-home]'));
   items.forEach(item => item.addEventListener('click', () => setActive(item)));
 })();
+
+/* Re-load once after the subcategory normalizer is installed.
+   app.js starts the first load before this file runs, so without this
+   refresh existing products do not contain sub_category. */
+loadProducts();
