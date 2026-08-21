@@ -1,4 +1,137 @@
 (() => {
+  /* =========================
+     SUBCATEGORIES
+  ========================= */
+  state.subCategory = state.subCategory || 'الكل';
+
+  const baseNormalizeProduct = normalizeProduct;
+  normalizeProduct = function(r, idx){
+    const p = baseNormalizeProduct(r, idx);
+    p.sub_category = norm(
+      r.sub_category ||
+      r.subcategory ||
+      r.sub_category_name ||
+      ''
+    );
+    return p;
+  };
+
+  const baseFiltered = filtered;
+  filtered = function(){
+    return baseFiltered().filter(p =>
+      state.subCategory === 'الكل' ||
+      p.sub_category === state.subCategory
+    );
+  };
+
+  function subcategoriesForCategory(category = state.category){
+    if(!category || category === 'الكل') return [];
+    return [...new Set(
+      state.products
+        .filter(p => p.category === category)
+        .map(p => p.sub_category)
+        .filter(Boolean)
+    )].sort((a,b) => a.localeCompare(b, 'ar'));
+  }
+
+  const baseRenderSubfilters = renderSubfilters;
+  renderSubfilters = function(){
+    baseRenderSubfilters();
+
+    const box = document.querySelector('#subfilters');
+    const categorySelect = document.querySelector('#categorySelect');
+    if(!box || !categorySelect) return;
+
+    const subs = subcategoriesForCategory();
+
+    if(state.subCategory !== 'الكل' && !subs.includes(state.subCategory)){
+      state.subCategory = 'الكل';
+    }
+
+    document.querySelector('#subCategorySelect')?.remove();
+
+    if(!subs.length) return;
+
+    const select = document.createElement('select');
+    select.id = 'subCategorySelect';
+    select.className = 'sort-select';
+    select.setAttribute('aria-label', 'القسم الفرعي');
+    select.innerHTML = `
+      <option value="الكل">كل الأقسام الفرعية</option>
+      ${subs.map(s => `
+        <option value="${esc(s)}" ${state.subCategory === s ? 'selected' : ''}>
+          ${esc(s)}
+        </option>
+      `).join('')}
+    `;
+
+    categorySelect.insertAdjacentElement('afterend', select);
+  };
+
+  const baseOpenProduct = openProduct;
+  openProduct = function(id){
+    baseOpenProduct(id);
+    const p = byId(id);
+    if(!p?.sub_category) return;
+
+    const links = document.querySelector('#productModalContent .product-links');
+    if(!links || links.querySelector('[data-product-subcategory]')) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'product-link-btn';
+    btn.dataset.productSubcategory = p.sub_category;
+    btn.textContent = p.sub_category;
+    links.appendChild(btn);
+  };
+
+  document.addEventListener('click', e => {
+    const sub = e.target.closest('[data-product-subcategory]');
+    if(sub){
+      state.subCategory = sub.dataset.productSubcategory;
+      state.brand = 'الكل';
+      state.offersOnly = false;
+      document.querySelector('#productModal')?.close();
+      renderProducts();
+      storeView('products');
+      document.querySelector('#products')?.scrollIntoView({behavior:'smooth', block:'start'});
+      return;
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if(e.target.closest('[data-category], [data-quick-category], [data-product-category], [data-go-home], [data-go-categories], [data-filter-offers]')){
+      state.subCategory = 'الكل';
+    }
+  }, true);
+
+  document.addEventListener('change', e => {
+    if(e.target.id === 'subCategorySelect'){
+      state.subCategory = e.target.value;
+      state.offersOnly = false;
+      renderProducts();
+      return;
+    }
+
+    if(e.target.id === 'categorySelect'){
+      state.subCategory = 'الكل';
+    }
+  }, true);
+
+  /* Add subcategory text to product cards without changing app.js */
+  const baseProductCard = productCard;
+  productCard = function(p, index = 99){
+    let html = baseProductCard(p, index);
+    if(p.sub_category){
+      const currentMeta = esc([p.category, p.brand].filter(Boolean).join(' • '));
+      const newMeta = esc([p.category, p.sub_category, p.brand].filter(Boolean).join(' • '));
+      html = html.replace(currentMeta, newMeta);
+    }
+    return html;
+  };
+})();
+
+(() => {
   const PAGE_SIZE = 24;
 
   let visibleProducts = PAGE_SIZE;
@@ -8,6 +141,7 @@
   function currentFilterKey(){
     return [
       state.category,
+      state.subCategory || 'الكل',
       state.brand,
       state.search,
       state.offersOnly ? '1' : '0',
@@ -107,6 +241,9 @@
 
     if(state.offersOnly){
       title = 'كل العروض';
+    }
+    else if(state.subCategory && state.subCategory !== 'الكل'){
+      title = `${state.category} - ${state.subCategory}`;
     }
     else if(state.brand !== 'الكل'){
       title = `منتجات ${state.brand}`;
