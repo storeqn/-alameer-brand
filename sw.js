@@ -1,5 +1,5 @@
-const CACHE = 'alameer-brand-v9';
-const RUNTIME_CACHE = 'alameer-runtime-v2';
+const CACHE = 'alameer-brand-v10';
+const RUNTIME_CACHE = 'alameer-runtime-v3';
 
 const ASSETS = [
   './',
@@ -82,8 +82,6 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // Product/Sheet data must always prefer the newest network response.
-  // This prevents old stock values (for example stock=0) from being hidden by stale cache.
   if(isSheetRequest(url)){
     event.respondWith(
       networkFirst(request)
