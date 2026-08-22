@@ -17,19 +17,31 @@
     }
   }
 
+  function isCouponActive(c) {
+    const v = c?.active;
+    if (v === false || v === 0) return false;
+
+    const s = String(v ?? '').trim().toLowerCase();
+    if (['0', 'false', 'no', 'off', 'disabled', 'لا', 'متوقف'].includes(s)) {
+      return false;
+    }
+
+    return true;
+  }
+
   function couponStatus(c) {
-    if (c.status) return c.status;
-    if (c.active === false) return 'disabled';
-    if (c.valid_now === true) return 'active';
+    if (!isCouponActive(c)) return 'disabled';
 
     const now = Date.now();
-    const start = c.start_at ? new Date(c.start_at).getTime() : 0;
-    const end = c.end_at ? new Date(c.end_at).getTime() : 0;
+    const startRaw = c.start_at || c.start || '';
+    const endRaw = c.end_at || c.end || '';
+    const start = startRaw ? new Date(startRaw).getTime() : 0;
+    const end = endRaw ? new Date(endRaw).getTime() : 0;
 
-    if (start && now < start) return 'scheduled';
-    if (end && now > end) return 'expired';
+    if (start && !isNaN(start) && now < start) return 'scheduled';
+    if (end && !isNaN(end) && now > end) return 'expired';
 
-    return c.active === false ? 'disabled' : 'active';
+    return 'active';
   }
 
   function applyCouponsToStore(coupons) {
@@ -39,11 +51,13 @@
       const code = String(c.code || '').trim().toUpperCase();
       if (!code) return;
 
+      const active = isCouponActive(c);
       const status = couponStatus(c);
 
       remoteCoupons[code] = {
         ...c,
         code,
+        active,
         status,
         start: c.start || c.start_at || '',
         end: c.end || c.end_at || ''
@@ -54,7 +68,7 @@
     window.STORE_CONFIG.coupons = {};
 
     Object.values(remoteCoupons).forEach(c => {
-      if (c.status === 'active' && c.active !== false) {
+      if (c.status === 'active' && c.active) {
         window.STORE_CONFIG.coupons[c.code] = {
           type: c.type,
           value: Number(c.value || 0),
@@ -166,7 +180,7 @@
     if (!c) return 'الكوبون غير صحيح';
     if (c.status === 'expired') return 'انتهت صلاحية هذا الكوبون';
     if (c.status === 'scheduled') return 'هذا الكوبون لم يبدأ بعد';
-    if (c.status === 'disabled' || c.active === false) return 'هذا الكوبون متوقف حالياً';
+    if (c.status === 'disabled' || !c.active) return 'هذا الكوبون متوقف حالياً';
     return '';
   }
 
