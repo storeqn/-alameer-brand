@@ -17,6 +17,21 @@
     }
   }
 
+  function couponStatus(c) {
+    if (c.status) return c.status;
+    if (c.active === false) return 'disabled';
+    if (c.valid_now === true) return 'active';
+
+    const now = Date.now();
+    const start = c.start_at ? new Date(c.start_at).getTime() : 0;
+    const end = c.end_at ? new Date(c.end_at).getTime() : 0;
+
+    if (start && now < start) return 'scheduled';
+    if (end && now > end) return 'expired';
+
+    return c.active === false ? 'disabled' : 'active';
+  }
+
   function applyCouponsToStore(coupons) {
     remoteCoupons = {};
 
@@ -24,9 +39,14 @@
       const code = String(c.code || '').trim().toUpperCase();
       if (!code) return;
 
+      const status = couponStatus(c);
+
       remoteCoupons[code] = {
         ...c,
-        code
+        code,
+        status,
+        start: c.start || c.start_at || '',
+        end: c.end || c.end_at || ''
       };
     });
 
@@ -110,7 +130,7 @@
 
         const data = await res.json();
         if (!data.success) {
-          throw new Error(data.message || 'تعذر تحميل الكوبونات');
+          throw new Error(data.message || data.error || 'تعذر تحميل الكوبونات');
         }
 
         const coupons = data.coupons || [];
@@ -122,7 +142,6 @@
       } catch (error) {
         console.error('Coupons sync error:', error);
 
-        // لا نمسح الكوبونات المحفوظة إذا فشل الاتصال.
         if (!couponsReady) {
           window.STORE_CONFIG = window.STORE_CONFIG || {};
           window.STORE_CONFIG.coupons = window.STORE_CONFIG.coupons || {};
@@ -155,17 +174,12 @@
     window.STORE_CONFIG = window.STORE_CONFIG || {};
     window.STORE_CONFIG.coupons = window.STORE_CONFIG.coupons || {};
 
-    // استخدم النسخة المحلية فوراً حتى يكون تطبيق الكوبون لحظياً.
     loadCachedCoupons();
-
-    // حدّث الكوبونات مبكراً في الخلفية بدل الانتظار عند الضغط على «تطبيق».
     loadRemoteCoupons({ force: true }).catch(() => {});
 
     const button = document.getElementById('applyCouponBtn');
     const input = document.getElementById('couponInput');
 
-    // كلما فتح المستخدم السلة، حدّث الكوبونات في الخلفية فقط.
-    // لا ننتظر هذا الطلب، لذلك فتح السلة وزر تطبيق يبقيان سريعين.
     ['cartBtn', 'bottomCartBtn'].forEach(id => {
       const cartButton = document.getElementById(id);
       if (cartButton) {
@@ -180,8 +194,6 @@
     button.onclick = async event => {
       const code = input.value.trim().toUpperCase();
 
-      // في أول زيارة فقط، إذا لم تصل أي نسخة من الكوبونات بعد، ننتظر أول تحميل.
-      // بعد ذلك لا يوجد أي طلب شبكة عند الضغط على «تطبيق».
       if (!couponsReady) {
         try {
           await loadRemoteCoupons({ force: true });
@@ -209,7 +221,6 @@
       }
     };
 
-    // عند رجوع المستخدم للمتجر بعد فترة، حدّث البيانات بالخلفية دون تعطيل الزر.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && !cacheIsFresh()) {
         loadRemoteCoupons({ force: true }).catch(() => {});
