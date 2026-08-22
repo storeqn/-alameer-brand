@@ -16,7 +16,7 @@ body.embedded .head,body.embedded .nav{display:none}body.embedded .container{mar
   <div class="nav"><a href="admin.html">إدارة المنتجات</a><a href="coupons-admin.html" class="active">إدارة الكوبونات</a></div>
 
   <section class="card">
-    <div class="note">الكوبون يتوقف تلقائياً بعد وقت الانتهاء، ويبقى محفوظاً في الشيت كسجل حتى تحذفه يدوياً.</div>
+    <div class="note">إذا تركت البداية فارغة فالكوبون يبدأ فوراً. وإذا تركت النهاية فارغة فيبقى فعالاً بدون تاريخ انتهاء حتى توقفه يدوياً.</div>
     <form id="couponForm">
       <div class="field"><label>كود الكوبون *</label><input id="code" required placeholder="مثال: AMEER10" autocapitalize="characters"></div>
       <div class="row">
@@ -47,27 +47,34 @@ const $=id=>document.getElementById(id);
 let editing='';
 let coupons=[];
 function status(msg,ok=true){const b=$('status');b.textContent=msg;b.className='status '+(ok?'ok':'err')}
-function fmt(v){if(!v)return 'بدون تحديد';try{return new Intl.DateTimeFormat('ar-IQ',{dateStyle:'short',timeStyle:'short'}).format(new Date(v))}catch(_){return v}}
+function fmt(v,emptyText='بدون تحديد'){if(!v)return emptyText;try{const d=new Date(v);if(isNaN(d.getTime()))return emptyText;return new Intl.DateTimeFormat('ar-IQ',{dateStyle:'short',timeStyle:'short'}).format(d)}catch(_){return v||emptyText}}
 function localValue(v){if(!v)return '';const d=new Date(v);if(isNaN(d))return '';const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`}
+function isCouponActive(c){
+  const v=c?.active;
+  if(v===false||v===0)return false;
+  const s=String(v??'').trim().toLowerCase();
+  if(['0','false','no','off','disabled','لا','متوقف'].includes(s))return false;
+  return true;
+}
 function couponStatus(c){
-  if(c.status)return c.status;
-  if(c.active===false)return 'disabled';
-  if(c.valid_now===true)return 'active';
+  if(!isCouponActive(c))return 'disabled';
   const now=Date.now();
-  const start=c.start_at?new Date(c.start_at).getTime():0;
-  const end=c.end_at?new Date(c.end_at).getTime():0;
-  if(start&&now<start)return 'scheduled';
-  if(end&&now>end)return 'expired';
-  return c.active===false?'disabled':'active';
+  const startRaw=c.start_at||c.start||'';
+  const endRaw=c.end_at||c.end||'';
+  const start=startRaw?new Date(startRaw).getTime():0;
+  const end=endRaw?new Date(endRaw).getTime():0;
+  if(start&&!isNaN(start)&&now<start)return 'scheduled';
+  if(end&&!isNaN(end)&&now>end)return 'expired';
+  return 'active';
 }
 async function load(){
   $('list').innerHTML='<div class="empty">جاري التحميل...</div>';
   try{const r=await fetch(`${SCRIPT_URL}?action=coupons&t=${Date.now()}`,{cache:'no-store'});const j=await r.json();if(!j.success)throw new Error(j.message||j.error||'خطأ');coupons=j.coupons||[];render()}catch(e){$('list').innerHTML='<div class="empty">تعذر تحميل الكوبونات.</div>'}
 }
-function render(){if(!coupons.length){$('list').innerHTML='<div class="empty">لا توجد كوبونات بعد.</div>';return}$('list').innerHTML=coupons.map((c,i)=>{const st=couponStatus(c);const labels={active:'فعال',expired:'منتهي',scheduled:'لم يبدأ',disabled:'متوقف'};const discount=c.type==='fixed'?`${Number(c.value).toLocaleString('en-US')} د.ع`:`${c.value}%`;return `<div class="coupon"><div><h3>${c.code} <span class="badge ${st}">${labels[st]||st}</span></h3><div class="meta">الخصم: ${discount} • الحد الأدنى: ${Number(c.min||0).toLocaleString('en-US')} د.ع<br>البداية: ${fmt(c.start_at||c.start)}<br>الانتهاء: ${fmt(c.end_at||c.end)}</div></div><div class="actions"><button class="secondary" data-edit="${i}" type="button">تعديل</button><button class="danger" data-delete="${c.code}" type="button">حذف</button></div></div>`}).join('')}
+function render(){if(!coupons.length){$('list').innerHTML='<div class="empty">لا توجد كوبونات بعد.</div>';return}$('list').innerHTML=coupons.map((c,i)=>{const st=couponStatus(c);const labels={active:'فعال',expired:'منتهي',scheduled:'لم يبدأ',disabled:'متوقف'};const discount=c.type==='fixed'?`${Number(c.value).toLocaleString('en-US')} د.ع`:`${c.value}%`;const start=c.start_at||c.start||'';const end=c.end_at||c.end||'';return `<div class="coupon"><div><h3>${c.code} <span class="badge ${st}">${labels[st]||st}</span></h3><div class="meta">الخصم: ${discount} • الحد الأدنى: ${Number(c.min||0).toLocaleString('en-US')} د.ع<br>البداية: ${fmt(start,'يبدأ فوراً')}<br>الانتهاء: ${fmt(end,'بدون انتهاء')}</div></div><div class="actions"><button class="secondary" data-edit="${i}" type="button">تعديل</button><button class="danger" data-delete="${c.code}" type="button">حذف</button></div></div>`}).join('')}
 function reset(){editing='';$('couponForm').reset();$('active').checked=true;$('min').value='0';$('code').disabled=false;$('saveBtn').textContent='+ إنشاء الكوبون';$('cancelBtn').style.display='none';$('status').className='status'}
 $('couponForm').addEventListener('submit',async e=>{e.preventDefault();const code=$('code').value.trim().toUpperCase().replace(/\s+/g,'');if(!code)return;const body=new URLSearchParams({action:editing?'coupon_update':'coupon_add',code,type:$('type').value,value:$('value').value,min:$('min').value||'0',start_at:$('start').value,end_at:$('end').value,active:$('active').checked?'1':'0'});$('saveBtn').disabled=true;try{const r=await fetch(SCRIPT_URL,{method:'POST',body});const j=await r.json();if(!j.success)throw new Error(j.message||j.error||'تعذر الحفظ');status(editing?'تم تحديث الكوبون':'تم إنشاء الكوبون');reset();await load()}catch(err){status(String(err.message||err),false)}finally{$('saveBtn').disabled=false}});
-$('list').addEventListener('click',async e=>{const eb=e.target.closest('[data-edit]');if(eb){const c=coupons[Number(eb.dataset.edit)];editing=c.code;$('code').value=c.code;$('code').disabled=true;$('type').value=c.type;$('value').value=c.value;$('min').value=c.min||0;$('start').value=localValue(c.start_at||c.start);$('end').value=localValue(c.end_at||c.end);$('active').checked=c.active!==false;$('saveBtn').textContent='حفظ التعديل';$('cancelBtn').style.display='block';scrollTo({top:0,behavior:'smooth'});return}const db=e.target.closest('[data-delete]');if(db){if(!confirm(`حذف الكوبون ${db.dataset.delete} نهائياً؟`))return;try{const r=await fetch(SCRIPT_URL,{method:'POST',body:new URLSearchParams({action:'coupon_delete',code:db.dataset.delete})});const j=await r.json();if(!j.success)throw new Error(j.message||j.error||'تعذر الحذف');await load()}catch(err){alert(err.message||err)}}});
+$('list').addEventListener('click',async e=>{const eb=e.target.closest('[data-edit]');if(eb){const c=coupons[Number(eb.dataset.edit)];editing=c.code;$('code').value=c.code;$('code').disabled=true;$('type').value=c.type;$('value').value=c.value;$('min').value=c.min||0;$('start').value=localValue(c.start_at||c.start);$('end').value=localValue(c.end_at||c.end);$('active').checked=isCouponActive(c);$('saveBtn').textContent='حفظ التعديل';$('cancelBtn').style.display='block';scrollTo({top:0,behavior:'smooth'});return}const db=e.target.closest('[data-delete]');if(db){if(!confirm(`حذف الكوبون ${db.dataset.delete} نهائياً؟`))return;try{const r=await fetch(SCRIPT_URL,{method:'POST',body:new URLSearchParams({action:'coupon_delete',code:db.dataset.delete})});const j=await r.json();if(!j.success)throw new Error(j.message||j.error||'تعذر الحذف');await load()}catch(err){alert(err.message||err)}}});
 $('cancelBtn').onclick=reset;$('refresh').onclick=load;load();
 </script>
 </body>
