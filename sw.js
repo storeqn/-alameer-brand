@@ -1,5 +1,5 @@
-const CACHE = 'alameer-brand-v11';
-const RUNTIME_CACHE = 'alameer-runtime-v4';
+const CACHE = 'alameer-brand-v12';
+const RUNTIME_CACHE = 'alameer-runtime-v5';
 
 const ASSETS = [
   './',
@@ -101,15 +101,13 @@ self.addEventListener('fetch', event => {
 
   if(url.origin === self.location.origin){
     event.respondWith(
-      caches.match(request)
-        .then(cached => cached || fetch(request).then(response => {
-          if(response && response.ok){
-            const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put(request, copy));
-          }
-          return response;
-        }))
-        .catch(() => caches.match('./index.html'))
+      networkFirst(request)
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if(cached) return cached;
+          if(request.mode === 'navigate') return caches.match('./index.html');
+          throw new Error('offline asset unavailable');
+        })
     );
   }
 });
