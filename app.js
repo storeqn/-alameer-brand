@@ -654,6 +654,8 @@ async function loadProducts(){
 
   renderAll();
 
+  renderBrandShowcase();
+
 }
 
 
@@ -753,6 +755,118 @@ function brands(){
       )
   );
 
+}
+
+
+/* =========================
+   HOME BRAND LOGOS
+========================= */
+
+const BRANDS_API_URL =
+  C?.apiUrl ||
+  'https://script.google.com/macros/s/AKfycbwxFs75do4gJ941Agg0x6432z18qPjqkZ0ucutOCkaH-keZfDGP_xCPRhawbVXLIw8Y/exec';
+
+let brandLogoItems = [];
+
+function renderBrandShowcase(){
+
+  const section =
+    $('#brandShowcase');
+
+  const track =
+    $('#brandShowcaseTrack');
+
+  if(!section || !track){
+    return;
+  }
+
+  const productBrandNames =
+    new Set(
+      state.products
+        .map(p => norm(p.brand).toLowerCase())
+        .filter(Boolean)
+    );
+
+  const visibleBrands =
+    brandLogoItems
+      .filter(b =>
+        b.name &&
+        b.logo &&
+        productBrandNames.has(
+          norm(b.name).toLowerCase()
+        )
+      )
+      .sort((a,b) =>
+        a.name.localeCompare(b.name,'ar')
+      );
+
+  if(!visibleBrands.length){
+    section.hidden = true;
+    track.innerHTML = '';
+    return;
+  }
+
+  track.innerHTML =
+    visibleBrands
+      .map(b => `
+        <button
+          type="button"
+          class="brand-logo-card"
+          data-brand-strip="${esc(b.name)}"
+          aria-label="عرض منتجات ${esc(b.name)}"
+          title="${esc(b.name)}"
+        >
+          <img
+            src="${esc(b.logo)}"
+            alt="${esc(b.name)}"
+            loading="lazy"
+            decoding="async"
+            onerror="this.closest('.brand-logo-card').style.display='none'"
+          >
+        </button>
+      `)
+      .join('');
+
+  section.hidden = false;
+}
+
+async function loadBrandShowcase(){
+
+  try{
+
+    const separator =
+      BRANDS_API_URL.includes('?')
+      ? '&'
+      : '?';
+
+    const res =
+      await fetch(
+        `${BRANDS_API_URL}${separator}action=brands&_=${Date.now()}`,
+        { cache:'no-store' }
+      );
+
+    if(!res.ok){
+      throw new Error('brands request failed');
+    }
+
+    const data =
+      await res.json();
+
+    brandLogoItems =
+      Array.isArray(data?.brands)
+      ? data.brands.map(b => ({
+          name:norm(b?.name),
+          logo:norm(b?.logo)
+        }))
+      : [];
+
+    renderBrandShowcase();
+
+  }
+  catch(error){
+    console.warn('Brands strip:',error);
+    renderBrandShowcase();
+  }
 }
 
 
@@ -3354,6 +3468,38 @@ document.addEventListener(
 
   e => {
 
+/* شريط شعارات البراندات في الرئيسية */
+
+const brandStrip =
+  e.target.closest('[data-brand-strip]');
+
+if(brandStrip){
+
+  state.brand =
+    brandStrip.dataset.brandStrip;
+
+  state.category = 'الكل';
+  state.offersOnly = false;
+  state.search = '';
+
+  if($('#searchInput')){
+    $('#searchInput').value = '';
+  }
+
+  renderCategories();
+  renderProducts();
+  storeView('products');
+
+  $('#products')
+    ?.scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+
+  return;
+}
+
+
 /* الانتقال من تفاصيل المنتج إلى القسم */
 
 const productCategory =
@@ -4183,3 +4329,4 @@ showInstallGuide();
 
 
 loadProducts();
+loadBrandShowcase();
