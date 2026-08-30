@@ -777,15 +777,17 @@
        BOTTOM NAV
   ========================== -->
 
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" aria-label="التنقل الرئيسي">
 
 
     <a
       href="#home"
       data-go-home
+      class="bottom-nav-item is-active"
+      aria-label="الرئيسية"
     >
-      <span>
-        ⌂
+      <span class="bottom-nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5h-5.8v-6.4H9.3V21H3.5a.5.5 0 0 1-.5-.5z"/></svg>
       </span>
 
       <small>
@@ -797,9 +799,11 @@
     <a
       href="#categories"
       data-go-categories
+      class="bottom-nav-item"
+      aria-label="الأقسام"
     >
-      <span>
-        ▦
+      <span class="bottom-nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       </span>
 
       <small>
@@ -811,9 +815,11 @@
     <a
       href="#offers"
       data-filter-offers="true"
+      class="bottom-nav-item"
+      aria-label="العروض"
     >
-      <span>
-        ★
+      <span class="bottom-nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20.6 13.1 13.1 20.6a2 2 0 0 1-2.8 0L3.4 13.7a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h7.3a2 2 0 0 1 1.4.6l7.1 6.7a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.4"/><path d="m9 15 6-6M9.2 10.1h.01M14.8 14.9h.01"/></svg>
       </span>
 
       <small>
@@ -825,10 +831,12 @@
     <button
       type="button"
       id="bottomCartBtn"
+      class="bottom-nav-item"
+      aria-label="السلة"
     >
 
-      <span>
-        🛒
+      <span class="bottom-nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 4h2l1.8 10.2a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
       </span>
 
       <small>
