@@ -2133,3 +2133,98 @@ body.cart-open{
     height:88px;
   }
 }
+
+
+/* =========================
+   PREMIUM BOTTOM NAV — 2026-08-30
+   Matches the rounded reference navigation
+========================= */
+@media(max-width:680px){
+  body{
+    padding-bottom:calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav{
+    display:grid;
+    left:14px;
+    right:14px;
+    bottom:max(10px,env(safe-area-inset-bottom));
+    min-height:78px;
+    padding:6px;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:3px;
+    background:rgba(255,255,255,.91);
+    border:1px solid rgba(255,255,255,.82);
+    border-radius:27px;
+    box-shadow:0 14px 38px rgba(35,28,18,.18);
+    backdrop-filter:blur(22px) saturate(1.25);
+    -webkit-backdrop-filter:blur(22px) saturate(1.25);
+    overflow:visible;
+  }
+
+  .bottom-nav a,
+  .bottom-nav button{
+    min-width:0;
+    min-height:66px;
+    padding:7px 3px 6px;
+    border-radius:22px;
+    color:#4b4a48;
+    gap:5px;
+    transition:background .2s ease,color .2s ease,transform .15s ease;
+  }
+
+  .bottom-nav a:active,
+  .bottom-nav button:active{
+    transform:scale(.96);
+  }
+
+  .bottom-nav .bottom-nav-item.is-active{
+    background:linear-gradient(135deg,rgba(244,236,222,.96),rgba(251,248,240,.92));
+    color:var(--gold);
+  }
+
+  .bottom-nav-icon{
+    width:30px;
+    height:30px;
+    display:grid;
+    place-items:center;
+    line-height:1;
+  }
+
+  .bottom-nav-icon svg{
+    width:29px;
+    height:29px;
+    display:block;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.9;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+
+  .bottom-nav-item[data-go-home] .bottom-nav-icon svg{
+    fill:currentColor;
+    stroke:currentColor;
+  }
+
+  .bottom-nav small{
+    font-size:12px;
+    line-height:1.1;
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  .bottom-nav b{
+    top:2px;
+    right:calc(50% - 25px);
+    min-width:20px;
+    height:20px;
+    padding:0 5px;
+    border:2px solid #fff;
+    background:var(--gold);
+    color:#fff;
+    font-size:10px;
+    font-weight:900;
+    box-shadow:0 3px 8px rgba(182,139,61,.28);
+  }
+}
