@@ -110,7 +110,7 @@ function updateSuggestions(){categoryOptions=uniqueSorted([...DEFAULT_CATEGORIES
 function optionsFor(id){return id==="category"?categoryOptions:id==="sub_category"?getSubOptions():brandOptions}
 function renderCombo(id,options,filter=""){const menu=$(id+"Menu"),q=filter.trim().toLowerCase(),list=options.filter(v=>!q||v.toLowerCase().includes(q));menu.innerHTML=list.length?list.map(v=>`<button type="button" class="comboOption" data-value="${esc(v)}">${esc(v)}</button>`).join(""):'<div class="comboEmpty">لا توجد نتائج — يمكنك كتابة اسم جديد</div>'}
 function toggleCombo(id,force){const menu=$(id+"Menu"),btn=$(id+"Btn"),willOpen=force===undefined?menu.classList.contains("hidden"):force;["category","sub_category","brand"].forEach(x=>{if(x!==id){$(x+"Menu").classList.add("hidden");$(x+"Btn").classList.remove("open")}});menu.classList.toggle("hidden",!willOpen);btn.classList.toggle("open",willOpen);if(willOpen)renderCombo(id,optionsFor(id),$(id).value)}
-["category","sub_category","brand"].forEach(id=>{$(id+"Btn").addEventListener("click",()=>toggleCombo(id));$(id).addEventListener("input",()=>{if(id==="category"){subCategoryOptions=getSubOptions();renderCombo("sub_category",subCategoryOptions)}renderCombo(id,optionsFor(id),$(id).value);toggleCombo(id,true)});$(id+"Menu").addEventListener("click",e=>{const o=e.target.closest("[data-value]");if(o){$(id).value=o.dataset.value;toggleCombo(id,false);if(id==="category"){subCategoryOptions=getSubOptions();renderCombo("sub_category",subCategoryOptions)}}})});
+["category","sub_category","brand"].forEach(id=>{$(id+"Btn").addEventListener("click",()=>toggleCombo(id));$(id).addEventListener("input",()=>{if(id==="category"){subCategoryOptions=getSubOptions();renderCombo("sub_category",subCategoryOptions)}renderCombo(id,optionsFor(id),$(id).value);toggleCombo(id,true)});$(id+"Menu").addEventListener("click",e=>{const o=e.target.closest("[data-value]");if(o){const previous=$(id).value;$(id).value=o.dataset.value;toggleCombo(id,false);if(id==="category"){if(previous&&previous!==o.dataset.value)$("sub_category").value="";subCategoryOptions=getSubOptions();renderCombo("sub_category",subCategoryOptions)}}})});
 document.addEventListener("click",e=>{if(!e.target.closest(".combo")){["category","sub_category","brand"].forEach(id=>toggleCombo(id,false))}});
 
 function showView(which){const views={products:$("productsView"),form:$("formView"),brands:$("brandsView"),coupons:$("couponsView")};Object.entries(views).forEach(([k,v])=>v.classList.toggle("hidden",k!==which));$("tabProducts").classList.toggle("active",which==="products");$("tabForm").classList.toggle("active",which==="form");$("tabBrands").classList.toggle("active",which==="brands");$("tabCoupons").classList.toggle("active",which==="coupons");if(which==="brands"&&!$("brandFrame").src)$("brandFrame").src="brands-admin.html?embedded=1";if(which==="coupons"&&!$("couponFrame").src)$("couponFrame").src="coupons-admin.html?embedded=1"}
@@ -125,7 +125,42 @@ function resetFormMode(){editingId="";form.reset();$("productId").value="";$("st
 function editProduct(p){editingId=String(p.id||"").trim();if(!editingId){alert("هذا المنتج لا يحتوي على ID، لذلك لا يمكن تعديله بأمان.");return}$("productId").value=editingId;$("name").value=p.name||"";$("price").value=p.price||"";$("old_price").value=p.old_price||"";$("stock").value=p.stock===""||p.stock==null?0:p.stock;$("category").value=p.category||"";$("sub_category").value=p.sub_category||"";$("brand").value=p.brand||"";$("variant_label").value=p.variant_label||p.option_label||"";$("variants").value=normalizeImages(p.variants||p.options||p.colors||p.types).join("\n");$("offer").checked=truthy(p.offer)||Number(p.old_price)>Number(p.price);$("featured").checked=truthy(p.featured);$("discount_note").value=p.discount_note||"";$("image").value=p.image||"";$("images").value=normalizeImages(p.images).join("\n");$("desc").value=p.desc||"";if(p.image){preview.src=p.image;preview.style.display="block"}else preview.style.display="none";$("formTitle").textContent="تعديل المنتج";$("editBadge").classList.remove("hidden");$("cancelEditBtn").classList.remove("hidden");saveBtn.textContent="حفظ التعديلات";clearStatus();updateSuggestions();showView("form");window.scrollTo({top:0,behavior:"smooth"})}
 
 function optimisticUpdateProduct(id,values){const i=products.findIndex(p=>String(p.id||"").trim()===String(id||"").trim());if(i<0)return;products[i]={...products[i],...values};updateSuggestions();renderProducts()}
-async function verifyEditedProduct(id,expected){const delays=[900,1600,2800,4500];for(const delay of delays){await sleep(delay);try{const fresh=await fetchProductsData();const saved=fresh.find(p=>String(p.id||"").trim()===String(id||"").trim());if(saved&&String(saved.price||"").trim()===String(expected.price||"").trim()&&String(saved.old_price||"").trim()===String(expected.old_price||"").trim()&&String(saved.variant_label||"").trim()===String(expected.variant_label||"").trim()&&String(saved.variants||"").trim()===String(expected.variants||"").trim()){products=fresh;products.forEach(p=>rememberSubcategory(p.category,p.sub_category));updateSuggestions();renderProducts();productCount.textContent=`✅ تم تأكيد حفظ التعديل — ${products.length} منتج`;setTimeout(renderProducts,2200);return true}}catch(e){console.warn("Save verification retry",e)}}await refreshProductsSilently();productCount.textContent="⚠️ تم إرسال التعديل، لكن تعذر تأكيده الآن. اضغط ↻ للتحديث.";return false}
+async function verifyEditedProduct(id,expected){
+  const delays=[900,1600,2800,4500];
+  const same=(a,b)=>String(a||"").trim()===String(b||"").trim();
+  for(const delay of delays){
+    await sleep(delay);
+    try{
+      const fresh=await fetchProductsData();
+      const saved=fresh.find(p=>String(p.id||"").trim()===String(id||"").trim());
+      if(
+        saved &&
+        same(saved.name,expected.name) &&
+        same(saved.price,expected.price) &&
+        same(saved.old_price,expected.old_price) &&
+        same(saved.stock,expected.stock) &&
+        same(saved.category,expected.category) &&
+        same(saved.sub_category,expected.sub_category) &&
+        same(saved.brand,expected.brand) &&
+        same(saved.variant_label,expected.variant_label) &&
+        same(saved.variants,expected.variants)
+      ){
+        products=fresh;
+        products.forEach(p=>rememberSubcategory(p.category,p.sub_category));
+        updateSuggestions();
+        renderProducts();
+        productCount.textContent=`✅ تم تأكيد حفظ التعديل — ${products.length} منتج`;
+        setTimeout(renderProducts,2200);
+        return true;
+      }
+    }catch(e){
+      console.warn("Save verification retry",e);
+    }
+  }
+  await refreshProductsSilently();
+  productCount.textContent="⚠️ تم إرسال التعديل، لكن تعذر تأكيده الآن. اضغط ↻ للتحديث.";
+  return false;
+}
 
 imageInput.addEventListener("input",function(){const url=this.value.trim();if(url){preview.src=url;preview.style.display="block"}else{preview.src="";preview.style.display="none"}});
 preview.addEventListener("error",function(){this.style.display="none"});
