@@ -2749,25 +2749,6 @@ function openProduct(id){
         }
 
 
-        ${
-          p.desc
-
-          ? `
-
-            <div class="full-desc">
-
-              ${esc(
-                p.desc
-              )}
-
-            </div>
-
-          `
-
-          : ''
-        }
-
-
         ${p.variants?.length ? `
 
           <div class="variant-section">
@@ -2795,6 +2776,25 @@ function openProduct(id){
           </div>
 
         ` : ''}
+
+
+        ${
+          p.desc
+
+          ? `
+
+            <div class="full-desc">
+
+              ${esc(
+                p.desc
+              )}
+
+            </div>
+
+          `
+
+          : ''
+        }
 
 
         <div class="detail-add">
