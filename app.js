@@ -358,6 +358,38 @@ function normalizeProduct(r, idx){
       );
 
 
+  /*
+    متغيرات المنتج (لون / نوع / درجة)
+    أمثلة في الشيت:
+    variants: Ruby 24 | Warm Brick 219 | Rich Mocha
+    variant_label: اللون
+  */
+  const variantsRaw =
+    norm(
+      r.variants ||
+      r.options ||
+      r.colors ||
+      r.types
+    );
+
+  const variants =
+    variantsRaw
+      ? [...new Set(
+          variantsRaw
+            .split(/\s*[|;\n]\s*/)
+            .map(norm)
+            .filter(Boolean)
+        )]
+      : [];
+
+  const variantLabel =
+    norm(
+      r.variant_label ||
+      r.option_label ||
+      r.variants_label
+    ) || 'النوع / اللون';
+
+
   return {
 
     id:
@@ -431,6 +463,12 @@ function normalizeProduct(r, idx){
 
 
     stock,
+
+
+    variants,
+
+    variant_label:
+      variantLabel,
 
 
     desc:
@@ -1021,51 +1059,48 @@ function filtered(){
 
 function qtyControl(
   id,
-  qty
+  qty,
+  variant = ''
 ){
 
   const product =
     byId(id);
 
-
   const maxed =
-
     product &&
+    qty >= product.stock;
 
-    qty >=
-      product.stock;
-
+  const variantAttr =
+    variant
+      ? ` data-variant="${esc(variant)}"`
+      : '';
 
   return `
 
     <div class="qty-control">
 
-
       <button
         type="button"
-        data-dec="${esc(id)}">
+        data-dec="${esc(id)}"
+        ${variantAttr}>
 
         −
 
       </button>
 
-
       <span>
-
         ${qty}
-
       </span>
-
 
       <button
         type="button"
         data-inc="${esc(id)}"
+        ${variantAttr}
         ${maxed ? 'disabled' : ''}>
 
         +
 
       </button>
-
 
     </div>
 
@@ -1084,9 +1119,11 @@ function productCard(
 ){
 
   const qty =
-    cartQty(
-      p.id
-    );
+    p.variants?.length
+      ? 0
+      : cartQty(
+          p.id
+        );
 
 
   const soldOut =
@@ -1292,25 +1329,40 @@ function productCard(
 
           `
 
-          : qty
+          : p.variants?.length
 
-            ? qtyControl(
-                p.id,
-                qty
-              )
-
-            : `
+            ? `
 
               <button
                 type="button"
                 class="add-btn"
-                data-add="${esc(p.id)}">
+                data-open-product="${esc(p.id)}">
 
-                أضف للسلة
+                اختر ${esc(p.variant_label || 'النوع')}
 
               </button>
 
             `
+
+            : qty
+
+              ? qtyControl(
+                  p.id,
+                  qty
+                )
+
+              : `
+
+                <button
+                  type="button"
+                  class="add-btn"
+                  data-add="${esc(p.id)}">
+
+                  أضف للسلة
+
+                </button>
+
+              `
         }
 
 
@@ -1883,7 +1935,10 @@ function renderAll(){
    CART
 ========================= */
 
-function cartQty(id){
+function cartQty(
+  id,
+  variant = ''
+){
 
   return (
 
@@ -1892,6 +1947,9 @@ function cartQty(id){
       x =>
         String(x.id) ===
         String(id)
+        &&
+        norm(x.variant) ===
+        norm(variant)
 
     )?.qty
 
@@ -1915,7 +1973,10 @@ function cartData(){
         ),
 
       qty:
-        x.qty
+        x.qty,
+
+      variant:
+        norm(x.variant)
 
     })
   )
@@ -2005,148 +2066,132 @@ function saveCart(){
 
 function add(
   id,
-  n = 1
+  n = 1,
+  variant = ''
 ){
 
   const product =
     byId(id);
 
-
-  if(
-    !product
-  ){
-
+  if(!product){
     return;
-
   }
 
+  variant =
+    norm(variant);
+
+  if(
+    product.variants?.length &&
+    !variant
+  ){
+    toast(
+      `اختر ${product.variant_label || 'النوع'} أولاً`
+    );
+    return;
+  }
+
+  if(
+    product.variants?.length &&
+    !product.variants.includes(variant)
+  ){
+    toast(
+      'الخيار المحدد غير متوفر'
+    );
+    return;
+  }
 
   if(
     product.stock <= 0
   ){
-
     toast(
       'نفذت كمية هذا المنتج'
     );
-
     return;
-
   }
 
-
   const currentQty =
-    cartQty(id);
-
+    cartQty(
+      id,
+      variant
+    );
 
   if(
     currentQty >=
     product.stock
   ){
-
     toast(
       `المتوفر فقط ${product.stock} قطعة`
     );
-
     return;
-
   }
-
 
   const allowedQty =
-
     Math.min(
-
       currentQty + n,
-
       product.stock
-
     );
-
 
   const x =
-
     state.cart.find(
-
       i =>
-        String(i.id) ===
-        String(id)
-
+        String(i.id) === String(id)
+        &&
+        norm(i.variant) === variant
     );
 
-
-  if(
-    x
-  ){
-
+  if(x){
     x.qty =
       allowedQty;
-
   }
-
   else{
-
     state.cart.push({
-
       id,
-
+      variant,
       qty:
-
         Math.min(
           n,
           product.stock
         )
-
     });
-
   }
-
 
   saveCart();
 
-
   const qty =
-    cartQty(id);
-
+    cartQty(
+      id,
+      variant
+    );
 
   const detailQty =
     $('#detailQty');
 
-
   if(
     detailQty &&
-    String(
-      state.openProductId
-    )
-    ===
-    String(id)
+    String(state.openProductId) === String(id)
   ){
-
     detailQty.innerHTML =
       qtyControl(
         id,
-        qty
+        qty,
+        variant
       );
-
   }
-
 
   if(
     qty >=
     product.stock
   ){
-
     toast(
       `وصلت للكمية المتوفرة: ${product.stock}`
     );
-
   }
-
   else{
-
     toast(
-      `تمت الإضافة للسلة • العدد ${qty}`
+      variant
+        ? `تمت إضافة ${variant} للسلة • العدد ${qty}`
+        : `تمت الإضافة للسلة • العدد ${qty}`
     );
-
   }
 
 }
@@ -2158,111 +2203,82 @@ function add(
 
 function setQty(
   id,
-  qty
+  qty,
+  variant = ''
 ){
 
   const product =
     byId(id);
 
-
-  if(
-    !product
-  ){
-
+  if(!product){
     return;
-
   }
 
+  variant =
+    norm(variant);
 
   qty =
     Number(
       qty || 0
     );
 
-
   if(
     qty >
     product.stock
   ){
-
     qty =
       product.stock;
-
 
     toast(
       `المتوفر فقط ${product.stock} قطعة`
     );
-
   }
 
-
   const x =
-
     state.cart.find(
-
       i =>
-        String(i.id) ===
-        String(id)
-
+        String(i.id) === String(id)
+        &&
+        norm(i.variant) === variant
     );
-
 
   if(
     !x &&
     qty > 0
   ){
-
     state.cart.push({
-
       id,
-
+      variant,
       qty
-
     });
-
   }
-
-  else if(
-    x
-  ){
-
+  else if(x){
     x.qty =
       qty;
-
   }
 
-
   state.cart =
-
     state.cart.filter(
-
       i =>
         i.qty > 0
-
     );
 
-
   saveCart();
-
 
   const detailQty =
     $('#detailQty');
 
-
   if(
     detailQty &&
-    String(
-      state.openProductId
-    ) === String(id) &&
+    String(state.openProductId) === String(id) &&
     qty > 0
   ){
-
     detailQty.innerHTML =
       qtyControl(
         id,
-        qty
+        qty,
+        variant
       );
-
   }
 
 }
@@ -2299,7 +2315,8 @@ function renderCart(){
 
       ({
         p,
-        qty
+        qty,
+        variant
       }) => `
 
 
@@ -2326,6 +2343,12 @@ function renderCart(){
 
           </h4>
 
+          ${variant ? `
+            <p class="cart-variant">
+              ${esc(p.variant_label || 'النوع')}: <strong>${esc(variant)}</strong>
+            </p>
+          ` : ''}
+
 
           ${
             p.price > 0
@@ -2349,7 +2372,8 @@ function renderCart(){
           ${
             qtyControl(
               p.id,
-              qty
+              qty,
+              variant
             )
           }
 
@@ -2363,7 +2387,8 @@ function renderCart(){
 
           class="remove-btn"
 
-          data-remove="${esc(p.id)}">
+          data-remove="${esc(p.id)}"
+          ${variant ? `data-variant="${esc(variant)}"` : ''}>
 
           حذف
 
@@ -2743,6 +2768,35 @@ function openProduct(id){
         }
 
 
+        ${p.variants?.length ? `
+
+          <div class="variant-section">
+
+            <div class="variant-title">
+              ${esc(p.variant_label || 'النوع / اللون')}
+            </div>
+
+            <div class="variant-options">
+              ${p.variants.map(v => `
+                <button
+                  type="button"
+                  class="variant-option"
+                  data-variant-select="${esc(v)}"
+                  data-product-id="${esc(p.id)}">
+                  ${esc(v)}
+                </button>
+              `).join('')}
+            </div>
+
+            <div class="variant-hint" id="variantHint">
+              اختر ${esc(p.variant_label || 'النوع / اللون')} قبل الإضافة للسلة
+            </div>
+
+          </div>
+
+        ` : ''}
+
+
         <div class="detail-add">
 
 
@@ -2751,6 +2805,7 @@ function openProduct(id){
 
             ${
               !soldOut &&
+              !p.variants?.length &&
               cartQty(p.id)
 
               ? qtyControl(
@@ -2784,18 +2839,35 @@ function openProduct(id){
 
             `
 
-            : `
+            : p.variants?.length
 
-              <button
-                type="button"
-                class="add-btn"
-                data-add="${esc(p.id)}">
+              ? `
 
-                أضف قطعة للسلة
+                <button
+                  type="button"
+                  class="add-btn"
+                  id="variantAddBtn"
+                  data-add-variant="${esc(p.id)}"
+                  disabled>
 
-              </button>
+                  اختر ${esc(p.variant_label || 'النوع')} أولاً
 
-            `
+                </button>
+
+              `
+
+              : `
+
+                <button
+                  type="button"
+                  class="add-btn"
+                  data-add="${esc(p.id)}">
+
+                  أضف قطعة للسلة
+
+                </button>
+
+              `
           }
 
 
@@ -2998,6 +3070,10 @@ function checkout(e){
       (x,i) =>
 
         `${i + 1}) ${x.p.name}` +
+
+        (x.variant
+          ? ` | ${x.p.variant_label || 'النوع'}: ${x.variant}`
+          : '') +
 
         ` | عدد: ${x.qty}` +
 
@@ -3558,6 +3634,102 @@ if(productBrand){
   return;
 }
     
+    const variantSelect =
+      e.target.closest(
+        '[data-variant-select]'
+      );
+
+    if(variantSelect){
+
+      const id =
+        variantSelect.dataset.productId;
+
+      const value =
+        variantSelect.dataset.variantSelect;
+
+      $('.variant-option')
+        .forEach(btn =>
+          btn.classList.toggle(
+            'active',
+            btn === variantSelect
+          )
+        );
+
+      const addVariantBtn =
+        $('#variantAddBtn');
+
+      if(addVariantBtn){
+        addVariantBtn.disabled = false;
+        addVariantBtn.dataset.variant = value;
+        addVariantBtn.textContent = `أضف ${value} للسلة`;
+      }
+
+      const hint =
+        $('#variantHint');
+
+      if(hint){
+        hint.textContent = `تم اختيار: ${value}`;
+      }
+
+      const qty =
+        cartQty(
+          id,
+          value
+        );
+
+      const detailQty =
+        $('#detailQty');
+
+      if(detailQty){
+        detailQty.innerHTML =
+          qty
+            ? qtyControl(
+                id,
+                qty,
+                value
+              )
+            : '';
+      }
+
+      return;
+    }
+
+
+    const addVariantBtn =
+      e.target.closest(
+        '[data-add-variant]'
+      );
+
+    if(addVariantBtn){
+
+      const variant =
+        norm(
+          addVariantBtn.dataset.variant
+        );
+
+      if(!variant){
+        const product =
+          byId(
+            addVariantBtn.dataset.addVariant
+          );
+
+        toast(
+          `اختر ${product?.variant_label || 'النوع'} أولاً`
+        );
+
+        return;
+      }
+
+      add(
+        addVariantBtn.dataset.addVariant,
+        1,
+        variant
+      );
+
+      return;
+    }
+
+
     const addBtn =
 
       e.target.closest(
@@ -3594,8 +3766,11 @@ if(productBrand){
         inc.dataset.inc,
 
         cartQty(
-          inc.dataset.inc
-        ) + 1
+          inc.dataset.inc,
+          inc.dataset.variant || ''
+        ) + 1,
+
+        inc.dataset.variant || ''
 
       );
 
@@ -3620,8 +3795,11 @@ if(productBrand){
         dec.dataset.dec,
 
         cartQty(
-          dec.dataset.dec
-        ) - 1
+          dec.dataset.dec,
+          dec.dataset.variant || ''
+        ) - 1,
+
+        dec.dataset.variant || ''
 
       );
 
@@ -3645,7 +3823,9 @@ if(productBrand){
 
         remove.dataset.remove,
 
-        0
+        0,
+
+        remove.dataset.variant || ''
 
       );
 
