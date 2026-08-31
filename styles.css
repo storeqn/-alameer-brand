@@ -869,6 +869,8 @@ a{
 
 .modal{
   width:min(940px,calc(100% - 20px));
+  touch-action:pan-y pinch-zoom;
+  overscroll-behavior:contain;
   max-height:92dvh;
   border:0;
   border-radius:26px;
@@ -2252,6 +2254,10 @@ body.cart-open{
 
 .variant-option{
   appearance:none;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
   border:1.5px solid var(--line);
   background:#fff;
   color:var(--ink);
