@@ -3647,7 +3647,7 @@ if(productBrand){
       const value =
         variantSelect.dataset.variantSelect;
 
-      $('.variant-option')
+      $$('.variant-option')
         .forEach(btn =>
           btn.classList.toggle(
             'active',
