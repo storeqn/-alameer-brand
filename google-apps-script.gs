@@ -89,7 +89,8 @@ function getHeaderInfo_(sheet) {
 function ensureProductHeaders_(sheet) {
   const required = [
     'id','name','price','old_price','offer','discount_note','image','images',
-    'category','sub_category','brand','featured','stock','desc','active'
+    'category','sub_category','brand','featured','stock','desc','active',
+    'variant_label','variants'
   ];
 
   if (sheet.getLastColumn() === 0) {
