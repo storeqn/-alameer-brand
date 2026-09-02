@@ -766,33 +766,34 @@ function categories(){
    BRANDS
 ========================= */
 
+function brandKey(value){
+  return norm(value)
+    .toLocaleLowerCase('en')
+    .replace(/[.\s]+/g,'');
+}
+
 function brands(){
+  const preferred = new Map();
 
-  return [
+  brandLogoItems.forEach(b=>{
+    const name = norm(b?.name);
+    const key = brandKey(name);
+    if(key && name && !preferred.has(key)) preferred.set(key,name);
+  });
 
-    ...new Set(
+  const unique = new Map();
 
-      state.products
+  state.products.forEach(p=>{
+    const name = norm(p.brand);
+    const key = brandKey(name);
+    if(!key || !name) return;
+    if(!unique.has(key)){
+      unique.set(key, preferred.get(key) || name);
+    }
+  });
 
-      .map(
-        p =>
-          p.brand
-      )
-
-      .filter(Boolean)
-
-    )
-
-  ]
-
-  .sort(
-    (a,b) =>
-      a.localeCompare(
-        b,
-        'ar'
-      )
-  );
-
+  return [...unique.values()]
+    .sort((a,b)=>a.localeCompare(b,'ar'));
 }
 
 
@@ -821,19 +822,22 @@ function renderBrandShowcase(){
   const productBrandNames =
     new Set(
       state.products
-        .map(p => norm(p.brand).toLowerCase())
+        .map(p => brandKey(p.brand))
         .filter(Boolean)
     );
 
   const visibleBrands =
-    brandLogoItems
-      .filter(b =>
-        b.name &&
-        b.logo &&
-        productBrandNames.has(
-          norm(b.name).toLowerCase()
+    [...new Map(
+      brandLogoItems
+        .filter(b =>
+          b.name &&
+          b.logo &&
+          productBrandNames.has(
+            brandKey(b.name)
+          )
         )
-      )
+        .map(b => [brandKey(b.name), b])
+    ).values()]
       .sort((a,b) =>
         a.name.localeCompare(b.name,'ar')
       );
@@ -952,8 +956,8 @@ function filtered(){
 
           ||
 
-          p.brand ===
-            state.brand;
+          brandKey(p.brand) ===
+            brandKey(state.brand);
 
 
         const searchText = `
