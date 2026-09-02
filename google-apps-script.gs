@@ -17,7 +17,7 @@ function doGet(e) {
   return jsonResponse({
     success: true,
     message: 'Alameer Store API is working',
-    supports: ['add', 'update', 'coupon_add', 'coupon_update', 'coupon_delete', 'coupons', 'brand_upsert', 'brand_delete', 'brands']
+    supports: ['add', 'update', 'delete', 'coupon_add', 'coupon_update', 'coupon_delete', 'coupons', 'brand_upsert', 'brand_delete', 'brands']
   });
 }
 
@@ -41,6 +41,9 @@ function doPost(e) {
 
     if (action === 'update') {
       return updateProduct_(sheet, info.headers, info.headerIndex, params);
+    }
+    if (action === 'delete') {
+      return deleteProduct_(sheet, info.headerIndex, params);
     }
     return addProduct_(sheet, info.headers, info.headerIndex, params);
   } catch (err) {
@@ -148,6 +151,24 @@ function updateProduct_(sheet, headers, headerIndex, params) {
   range.setValues([row]);
   SpreadsheetApp.flush();
   return jsonResponse({ success: true, action: 'update', id, row: targetRow });
+}
+
+function deleteProduct_(sheet, headerIndex, params) {
+  const id = String(params.id || '').trim();
+  if (!id) throw new Error('Missing product id');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) throw new Error('No products found');
+
+  const ids = sheet.getRange(2, headerIndex.id + 1, lastRow - 1, 1).getDisplayValues();
+  let targetRow = -1;
+  for (let i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]).trim() === id) { targetRow = i + 2; break; }
+  }
+  if (targetRow === -1) throw new Error('Product id not found: ' + id);
+
+  sheet.deleteRow(targetRow);
+  SpreadsheetApp.flush();
+  return jsonResponse({ success: true, action: 'delete', id });
 }
 
 function ensureCouponHeaders_(sheet) {
