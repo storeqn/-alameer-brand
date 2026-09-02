@@ -79,7 +79,7 @@ const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwxFs75do4gJ941Agg0x64
 const CSV_URL=(window.STORE_CONFIG&&window.STORE_CONFIG.sheetCsvUrl)||"";
 const $=id=>document.getElementById(id);
 const form=$("productForm"),saveBtn=$("saveBtn"),deleteProductBtn=$("deleteProductBtn"),statusBox=$("status"),imageInput=$("image"),preview=$("preview"),productsList=$("productsList"),searchInput=$("searchInput"),productCount=$("productCount");
-let products=[],editingId="",categoryOptions=[],subCategoryOptions=[],brandOptions=[],savedBrandNames=[],canDeleteProducts=false;
+let products=[],editingId="",categoryOptions=[],subCategoryOptions=[],brandOptions=[],savedBrandNames=[];
 const DEFAULT_CATEGORIES=["العناية بالبشرة","العناية بالجسم","غسولات","فرش مكياج","مكياج","عطور","لوشن جسم","العناية بالشعر"];
 const DEFAULT_BRANDS=["SKIN1004","Bioderma","Eucerin","CeraVe","The Ordinary"];
 const DEFAULT_SUBCATEGORIES={
@@ -119,12 +119,12 @@ function setStatus(msg,type="info"){statusBox.textContent=msg;statusBox.classNam
 function clearStatus(){statusBox.className="status";statusBox.style.display="none"}
 async function fetchProductsData(){const res=await fetch(CSV_URL+(CSV_URL.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"});if(!res.ok)throw new Error("HTTP "+res.status);return parseCSV(await res.text()).filter(p=>p.id||p.name)}
 async function loadSavedBrands(){try{const res=await fetch(SCRIPT_URL+"?action=brands&t="+Date.now(),{cache:"no-store"});if(!res.ok)return;const data=await res.json();savedBrandNames=Array.isArray(data.brands)?data.brands.map(b=>String(b.name||"").trim()).filter(Boolean):[];updateSuggestions()}catch(e){console.warn("Brands list unavailable",e)}}
-async function loadApiCapabilities(){try{const res=await fetch(SCRIPT_URL+"?t="+Date.now(),{cache:"no-store"});if(!res.ok)return;const data=await res.json();canDeleteProducts=Array.isArray(data.supports)&&data.supports.includes("delete");if(editingId)deleteProductBtn.classList.toggle("hidden",!canDeleteProducts)}catch(e){console.warn("API capabilities unavailable",e)}}
+
 async function loadProducts(){productsList.innerHTML='<div class="loader">جاري تحميل المنتجات...</div>';productCount.textContent="";try{products=await fetchProductsData();products.forEach(p=>rememberSubcategory(p.category,p.sub_category));updateSuggestions();renderProducts()}catch(e){console.error(e);updateSuggestions();productsList.innerHTML='<div class="empty">تعذر تحميل المنتجات. تحقق من الإنترنت ثم اضغط تحديث.</div>'}}
 async function refreshProductsSilently(){try{products=await fetchProductsData();products.forEach(p=>rememberSubcategory(p.category,p.sub_category));updateSuggestions();renderProducts();return true}catch(e){console.error(e);return false}}
 function renderProducts(){const q=searchInput.value.trim().toLowerCase(),list=products.filter(p=>!q||[p.name,p.category,p.sub_category,p.brand,p.id].some(v=>String(v||"").toLowerCase().includes(q)));productCount.textContent=`${list.length} منتج${q?" من أصل "+products.length:""}`;if(!list.length){productsList.innerHTML='<div class="empty">لا توجد منتجات مطابقة.</div>';return}productsList.innerHTML=list.map(p=>`<div class="productItem"><img src="${esc(p.image||"assets/logo.png")}" alt="" onerror="this.src='assets/logo.png'"><div class="productInfo"><h3>${esc(p.name||"بدون اسم")}</h3><div class="productMeta">${esc([p.category,p.sub_category,p.brand].filter(Boolean).join(" • ")||"بدون قسم")}<br>${money(p.price)}${p.stock!==undefined&&p.stock!==""?" • الكمية: "+esc(p.stock):""}${(p.variants||p.options||p.colors||p.types)?" • الخيارات: "+normalizeImages(p.variants||p.options||p.colors||p.types).length:""}</div></div><button class="editBtn" type="button" data-index="${products.indexOf(p)}">تعديل</button></div>`).join("")}
 function resetFormMode(){editingId="";form.reset();$("productId").value="";$("stock").value="0";$("variant_label").value="";$("variants").value="";$("formTitle").textContent="إضافة منتج جديد";$("editBadge").classList.add("hidden");$("cancelEditBtn").classList.add("hidden");deleteProductBtn.classList.add("hidden");deleteProductBtn.disabled=false;deleteProductBtn.textContent="🗑️ حذف المنتج نهائياً";saveBtn.textContent="+ إضافة المنتج";preview.src="";preview.style.display="none";clearStatus();updateSuggestions()}
-function editProduct(p){editingId=String(p.id||"").trim();if(!editingId){alert("هذا المنتج لا يحتوي على ID، لذلك لا يمكن تعديله بأمان.");return}$("productId").value=editingId;$("name").value=p.name||"";$("price").value=p.price||"";$("old_price").value=p.old_price||"";$("stock").value=p.stock===""||p.stock==null?0:p.stock;$("category").value=p.category||"";$("sub_category").value=p.sub_category||"";$("brand").value=p.brand||"";$("variant_label").value=p.variant_label||p.option_label||"";$("variants").value=normalizeImages(p.variants||p.options||p.colors||p.types).join("\n");$("offer").checked=truthy(p.offer)||Number(p.old_price)>Number(p.price);$("featured").checked=truthy(p.featured);$("discount_note").value=p.discount_note||"";$("image").value=p.image||"";$("images").value=normalizeImages(p.images).join("\n");$("desc").value=p.desc||"";if(p.image){preview.src=p.image;preview.style.display="block"}else preview.style.display="none";$("formTitle").textContent="تعديل المنتج";$("editBadge").classList.remove("hidden");$("cancelEditBtn").classList.remove("hidden");saveBtn.textContent="حفظ التعديلات";deleteProductBtn.classList.toggle("hidden",!canDeleteProducts);clearStatus();updateSuggestions();showView("form");window.scrollTo({top:0,behavior:"smooth"})}
+function editProduct(p){editingId=String(p.id||"").trim();if(!editingId){alert("هذا المنتج لا يحتوي على ID، لذلك لا يمكن تعديله بأمان.");return}$("productId").value=editingId;$("name").value=p.name||"";$("price").value=p.price||"";$("old_price").value=p.old_price||"";$("stock").value=p.stock===""||p.stock==null?0:p.stock;$("category").value=p.category||"";$("sub_category").value=p.sub_category||"";$("brand").value=p.brand||"";$("variant_label").value=p.variant_label||p.option_label||"";$("variants").value=normalizeImages(p.variants||p.options||p.colors||p.types).join("\n");$("offer").checked=truthy(p.offer)||Number(p.old_price)>Number(p.price);$("featured").checked=truthy(p.featured);$("discount_note").value=p.discount_note||"";$("image").value=p.image||"";$("images").value=normalizeImages(p.images).join("\n");$("desc").value=p.desc||"";if(p.image){preview.src=p.image;preview.style.display="block"}else preview.style.display="none";$("formTitle").textContent="تعديل المنتج";$("editBadge").classList.remove("hidden");$("cancelEditBtn").classList.remove("hidden");saveBtn.textContent="حفظ التعديلات";deleteProductBtn.classList.remove("hidden");clearStatus();updateSuggestions();showView("form");window.scrollTo({top:0,behavior:"smooth"})}
 
 function optimisticUpdateProduct(id,values){const i=products.findIndex(p=>String(p.id||"").trim()===String(id||"").trim());if(i<0)return;products[i]={...products[i],...values};updateSuggestions();renderProducts()}
 async function verifyEditedProduct(id,expected){
@@ -186,7 +186,7 @@ async function verifyDeletedProduct(id){
 }
 
 deleteProductBtn.addEventListener("click",async()=>{
-  if(!editingId||!canDeleteProducts)return;
+  if(!editingId)return;
   const id=editingId;
   const name=$("name").value.trim()||"هذا المنتج";
   if(!confirm(`هل أنت متأكد من حذف المنتج نهائياً؟\n\n${name}\n\nلا يمكن التراجع عن الحذف.`))return;
@@ -229,7 +229,6 @@ form.addEventListener("submit",async e=>{e.preventDefault();const isEdit=Boolean
 updateSuggestions();
 loadProducts();
 loadSavedBrands();
-loadApiCapabilities();
 </script>
 </body>
 </html>
