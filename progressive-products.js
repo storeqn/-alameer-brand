@@ -329,4 +329,80 @@ ${productsText}
   }
 })();
 
+/* =========================================================
+   RANDOM "YOU MAY ALSO LIKE" IN PRODUCT DETAILS
+========================================================= */
+(() => {
+  function randomProducts(excludeId, limit = 6){
+    const pool = state.products.filter(p => String(p.id) !== String(excludeId) && p.active !== false);
+    for(let i = pool.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, limit);
+  }
+
+  function recommendationCard(p){
+    const sold = Number(p.stock || 0) <= 0;
+    return `
+      <article class="detail-recommend-card" data-recommend-id="${esc(p.id)}">
+        <div class="detail-recommend-image">
+          <img src="${esc(p.images?.[0] || 'assets/logo.png')}" alt="${esc(p.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/logo.png'">
+          ${p.offer ? `<span>${esc(p.discount_note || 'عرض')}</span>` : ''}
+        </div>
+        <div class="detail-recommend-body">
+          <small>${esc(p.sub_category || p.category || '')}</small>
+          <strong>${esc(p.name)}</strong>
+          ${p.price > 0 ? `<b>${money(p.price)}</b>` : ''}
+          <button type="button" ${sold ? 'disabled' : ''}>${sold ? 'نفذت الكمية' : 'عرض المنتج'}</button>
+        </div>
+      </article>`;
+  }
+
+  function injectRecommendations(id){
+    const content = document.querySelector('#productModalContent');
+    if(!content) return;
+    content.querySelector('.detail-recommendations')?.remove();
+    const list = randomProducts(id, 6);
+    if(!list.length) return;
+    const section = document.createElement('section');
+    section.className = 'detail-recommendations';
+    section.innerHTML = `
+      <div class="detail-recommend-head"><h3>قد يعجبك أيضاً</h3><span>منتجات مختارة عشوائياً</span></div>
+      <div class="detail-recommend-track">${list.map(recommendationCard).join('')}</div>`;
+    content.appendChild(section);
+  }
+
+  const previousOpenProduct = openProduct;
+  openProduct = function(id){
+    previousOpenProduct(id);
+    injectRecommendations(id);
+  };
+
+  const style = document.createElement('style');
+  style.id = 'alameer-detail-recommendations-style';
+  style.textContent = `
+    .detail-recommendations{margin:26px 0 4px;padding-top:20px;border-top:1px solid rgba(23,21,18,.10)}
+    .detail-recommend-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}.detail-recommend-head h3{margin:0;font-size:20px}.detail-recommend-head span{font-size:11px;color:#8b8379}
+    .detail-recommend-track{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:2px 2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.detail-recommend-track::-webkit-scrollbar{display:none}
+    .detail-recommend-card{flex:0 0 155px;scroll-snap-align:start;border:1px solid #e9e2d8;border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 7px 20px rgba(17,16,14,.05);cursor:pointer}
+    .detail-recommend-image{height:145px;position:relative;background:#faf8f4;display:flex;align-items:center;justify-content:center}.detail-recommend-image img{width:100%;height:100%;object-fit:contain}.detail-recommend-image span{position:absolute;top:9px;right:9px;background:#11100e;color:#fff;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}
+    .detail-recommend-body{padding:11px;display:grid;gap:7px}.detail-recommend-body small{color:#8b8379;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.detail-recommend-body strong{font-size:14px;line-height:1.45;min-height:40px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.detail-recommend-body b{font-size:14px;color:#171512}.detail-recommend-body button{border:0;border-radius:12px;background:#11100e;color:#fff;min-height:38px;font:inherit;font-size:12px;font-weight:800}.detail-recommend-body button:disabled{background:#b7b7b7}
+    @media(max-width:520px){.detail-recommendations{margin-top:22px}.detail-recommend-card{flex-basis:142px}.detail-recommend-image{height:132px}.detail-recommend-head h3{font-size:18px}.detail-recommend-head span{display:none}}
+  `;
+  document.head.appendChild(style);
+
+  document.addEventListener('click', e => {
+    const card = e.target.closest('[data-recommend-id]');
+    if(!card) return;
+    if(e.target.closest('button:disabled')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = card.dataset.recommendId;
+    const modal = document.querySelector('#productModal');
+    if(modal?.open) modal.close();
+    setTimeout(() => openProduct(id), 20);
+  }, true);
+})();
+
 /* IMPORTANT: Do not call loadProducts() here. */
