@@ -1,942 +1,268 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f4ec">
+  <meta name="description" content="كوزمتك الأمير براند - عناية بالبشرة، مكياج، عطور ومنتجات أصلية">
+  <title>كوزمتك الأمير براند</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512x512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="الأمير براند">
 
-  <meta
-    name="theme-color"
-    content="#f8f4ec"
-  >
-
-  <meta
-    name="description"
-    content="كوزمتك الأمير براند - عناية بالبشرة، مكياج، عطور ومنتجات أصلية"
-  >
-
-  <title>
-    كوزمتك الأمير براند
-  </title>
-
-  <!-- PWA -->
-<link rel="manifest" href="manifest.webmanifest">
-
-<!-- iPhone / iPad -->
-<link
-  rel="apple-touch-icon"
-  sizes="180x180"
-  href="assets/icon-180x180.png"
->
-
-<link
-  rel="icon"
-  type="image/png"
-  sizes="192x192"
-  href="assets/icon-192x192.png"
->
-
-<link
-  rel="icon"
-  type="image/png"
-  sizes="512x512"
-  href="assets/icon-512x512.png"
->
-
-<meta
-  name="apple-mobile-web-app-capable"
-  content="yes"
->
-
-<meta
-  name="apple-mobile-web-app-status-bar-style"
-  content="default"
->
-
-<meta
-  name="apple-mobile-web-app-title"
-  content="الأمير براند"
->
-  
-  <link
-    rel="stylesheet"
-    href="styles.css"
-  >
-
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="theme-toggle.css">
 </head>
-
-
 <body>
-
-
-  <!-- =========================
-       OFFLINE
-  ========================== -->
-
-  <div
-    id="offlineBar"
-    class="offline-bar"
-    hidden
-  >
+  <div id="offlineBar" class="offline-bar" hidden>
     أنت غير متصل بالإنترنت — ستظهر البيانات المحفوظة إن وجدت
   </div>
 
-
-
-  <!-- =========================
-       HEADER
-  ========================== -->
-
   <header class="topbar">
-
     <div class="topbar-inner container">
+      <button class="icon-button" id="menuBtn" aria-label="فتح القائمة" type="button">☰</button>
 
-
-      <button
-        class="icon-button"
-        id="menuBtn"
-        aria-label="فتح القائمة"
-        type="button"
-      >
-        ☰
-      </button>
-
-
-      <a
-        class="brand"
-        href="#home"
-        aria-label="الأمير براند"
-      >
-
-        <img
-          src="assets/logo.png"
-          alt="شعار الأمير براند"
-          class="brand-logo"
-        >
-
-        <span class="brand-text">
-          الأمير براند
-        </span>
-
+      <a class="brand" href="#home" aria-label="الأمير براند">
+        <img src="assets/logo.png" alt="شعار الأمير براند" class="brand-logo">
+        <span class="brand-text">الأمير براند</span>
       </a>
 
-
-      <button
-        class="cart-button"
-        id="cartBtn"
-        aria-label="السلة"
-        type="button"
-      >
-
-        <span class="cart-icon">
-          🛒
-        </span>
-
-        <span
-          class="cart-badge"
-          id="cartCount"
-        >
-          0
-        </span>
-
+      <button class="cart-button" id="cartBtn" aria-label="السلة" type="button">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-badge" id="cartCount">0</span>
       </button>
-
     </div>
-
   </header>
 
+  <button id="themeColorBtn" class="theme-color-button" type="button" aria-label="تفعيل اللون الوردي" title="اللون الوردي">🌸</button>
 
-
-  <!-- =========================
-       DRAWER
-  ========================== -->
-
-  <aside
-    class="drawer"
-    id="drawer"
-    aria-hidden="true"
-  >
-
+  <aside class="drawer" id="drawer" aria-hidden="true">
     <div class="drawer-panel">
-
       <div class="drawer-head">
-
-        <strong>
-          الأمير براند
-        </strong>
-
-        <button
-          class="icon-button"
-          id="closeMenuBtn"
-          aria-label="إغلاق"
-          type="button"
-        >
-          ×
-        </button>
-
+        <strong>الأمير براند</strong>
+        <button class="icon-button" id="closeMenuBtn" aria-label="إغلاق" type="button">×</button>
       </div>
-
 
       <nav class="drawer-nav">
-
-        <a href="#home">
-          الرئيسية
-        </a>
-
-        <a href="#offers">
-          العروض
-        </a>
-
-        <a href="#categories">
-          الأقسام
-        </a>
-
-        <a href="#products">
-          المنتجات
-        </a>
-
-        <a href="#footer">
-          تواصل معنا
-        </a>
-
+        <a href="#home">الرئيسية</a>
+        <a href="#offers">العروض</a>
+        <a href="#categories">الأقسام</a>
+        <a href="#products">المنتجات</a>
+        <a href="#footer">تواصل معنا</a>
       </nav>
-
     </div>
 
-
-    <button
-      class="drawer-backdrop"
-      id="drawerBackdrop"
-      aria-label="إغلاق القائمة"
-      type="button"
-    >
-    </button>
-
+    <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة" type="button"></button>
   </aside>
 
-
-
-  <!-- =========================
-       MAIN
-  ========================== -->
-
   <main id="home">
-
-
-    <!-- =========================
-         HERO
-    ========================== -->
-
     <section class="hero container">
-
       <div class="hero-card">
-
-
         <div class="hero-copy">
-
-          <span class="eyebrow">
-            COSMETICS • PERFUMES • SKIN CARE
-          </span>
-
-          <h1>
-            الأمير براند
-          </h1>
-
-          <p>
-            اختيارات مميزة من العطور والمكياج والعناية، تصفح المنتجات بسهولة وأرسل طلبك مباشرة عبر واتساب.
-          </p>
-
+          <span class="eyebrow">COSMETICS • PERFUMES • SKIN CARE</span>
+          <h1>الأمير براند</h1>
+          <p>اختيارات مميزة من العطور والمكياج والعناية، تصفح المنتجات بسهولة وأرسل طلبك مباشرة عبر واتساب.</p>
 
           <div class="hero-actions">
-
-            <a
-              class="btn btn-primary"
-              href="#products"
-            >
-              تسوق الآن
-            </a>
-
-            <button
-              class="btn btn-ghost"
-              type="button"
-              data-install-open
-            >
-              ⇩ تثبيت المتجر
-            </button>
-
-            <a
-              class="btn btn-ghost"
-              href="#offers"
-            >
-              شاهد العروض
-            </a>
-
+            <a class="btn btn-primary" href="#products">تسوق الآن</a>
+            <button class="btn btn-ghost" type="button" data-install-open>⇩ تثبيت المتجر</button>
+            <a class="btn btn-ghost" href="#offers">شاهد العروض</a>
           </div>
-
         </div>
 
-
-        <div
-          class="hero-mark"
-          aria-hidden="true"
-        >
-          AB
-        </div>
-
+        <div class="hero-mark" aria-hidden="true">AB</div>
       </div>
-
     </section>
 
-
-
-    <!-- =========================
-         BRANDS STRIP
-    ========================== -->
-
-    <section
-      class="brand-showcase container"
-      id="brandShowcase"
-      hidden
-      aria-label="البراندات"
-    >
-      <div
-        class="brand-showcase-track"
-        id="brandShowcaseTrack"
-      ></div>
+    <section class="brand-showcase container" id="brandShowcase" hidden aria-label="البراندات">
+      <div class="brand-showcase-track" id="brandShowcaseTrack"></div>
     </section>
 
-
-
-    <!-- =========================
-         SEARCH
-    ========================== -->
-
-    <section
-      class="toolbar container"
-      aria-label="البحث والتصفية"
-    >
-
+    <section class="toolbar container" aria-label="البحث والتصفية">
       <label class="searchbox">
-
-        <span>
-          ⌕
-        </span>
-
-        <input
-          id="searchInput"
-          type="search"
-          placeholder="إبحث عن منتج، ماركة أو قسم..."
-          autocomplete="off"
-        >
-
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="إبحث عن منتج، ماركة أو قسم..." autocomplete="off">
       </label>
 
-
-      <button
-        class="filter-button"
-        id="showAllBtn"
-        type="button"
-      >
-        كل المنتجات
-      </button>
-
+      <button class="filter-button" id="showAllBtn" type="button">كل المنتجات</button>
     </section>
 
-
-
-    <!-- =========================
-         OFFERS
-    ========================== -->
-
-    <section
-      class="section container"
-      id="offers"
-    >
-
+    <section class="section container" id="offers">
       <div class="section-head">
-
         <div>
-
-          <span class="section-kicker">
-            SPECIAL OFFERS
-          </span>
-
-          <h2>
-            العروض
-          </h2>
-
+          <span class="section-kicker">SPECIAL OFFERS</span>
+          <h2>العروض</h2>
         </div>
-
-
-        <button
-          class="text-button"
-          data-filter-offers="true"
-          type="button"
-        >
-          عرض الكل
-        </button>
-
+        <button class="text-button" data-filter-offers="true" type="button">عرض الكل</button>
       </div>
 
-
-      <div
-        class="product-grid"
-        id="offersGrid"
-      >
-      </div>
-
-
-      <div
-        class="empty-card"
-        id="offersEmpty"
-        hidden
-      >
-        لا توجد عروض حالياً
-      </div>
-
+      <div class="product-grid" id="offersGrid"></div>
+      <div class="empty-card" id="offersEmpty" hidden>لا توجد عروض حالياً</div>
     </section>
 
-
-
-    <!-- =========================
-         FEATURED
-    ========================== -->
-
-    <section
-      id="featured"
-      class="section container"
-    >
-
+    <section id="featured" class="section container">
       <div class="section-head">
-
         <div>
-
-          <span class="section-kicker">
-            الأكثر طلباً
-          </span>
-
-          <h2>
-            منتجات مختارة لك
-          </h2>
-
+          <span class="section-kicker">الأكثر طلباً</span>
+          <h2>منتجات مختارة لك</h2>
         </div>
-
       </div>
 
-
-      <div
-        id="featuredGrid"
-        class="product-grid"
-      >
-      </div>
-
-
-      <div
-        id="featuredEmpty"
-        class="empty-card"
-        hidden
-      >
-        لا توجد منتجات مميزة حالياً.
-      </div>
-
+      <div id="featuredGrid" class="product-grid"></div>
+      <div id="featuredEmpty" class="empty-card" hidden>لا توجد منتجات مميزة حالياً.</div>
     </section>
 
-
-
-    <!-- =========================
-         CATEGORIES
-         مخفي في الرئيسية
-    ========================== -->
-
-    <section
-      class="section container"
-      id="categories"
-      hidden
-    >
-
+    <section class="section container" id="categories" hidden>
       <div class="section-head">
-
         <div>
-
-          <span class="section-kicker">
-            CATEGORIES
-          </span>
-
-          <h2>
-            الأقسام
-          </h2>
-
+          <span class="section-kicker">CATEGORIES</span>
+          <h2>الأقسام</h2>
         </div>
-
       </div>
-
-
-      <div
-        class="category-grid"
-        id="categoryGrid"
-      >
-      </div>
-
+      <div class="category-grid" id="categoryGrid"></div>
     </section>
 
-
-
-    <!-- =========================
-         PRODUCTS
-    ========================== -->
-
-    <section
-      class="section container"
-      id="products"
-    >
-
+    <section class="section container" id="products">
       <div class="section-head">
-
         <div>
-
-          <span class="section-kicker">
-            OUR PRODUCTS
-          </span>
-
-          <h2 id="productsTitle">
-            كل المنتجات
-          </h2>
-
+          <span class="section-kicker">OUR PRODUCTS</span>
+          <h2 id="productsTitle">كل المنتجات</h2>
         </div>
-
-
-        <span
-          class="count-label"
-          id="productsCount"
-        >
-        </span>
-
+        <span class="count-label" id="productsCount"></span>
       </div>
 
-
-      <div
-        class="subfilters"
-        id="subfilters"
-        hidden
-      >
-      </div>
-
-
-      <div
-        class="product-grid"
-        id="productsGrid"
-      >
-      </div>
-
-
-      <div
-        class="empty-card"
-        id="productsEmpty"
-        hidden
-      >
-        لا توجد منتجات مطابقة.
-      </div>
-
-
-      <div
-        class="loading-card"
-        id="loadingCard"
-      >
-        جاري تحميل المنتجات...
-      </div>
-
+      <div class="subfilters" id="subfilters" hidden></div>
+      <div class="product-grid" id="productsGrid"></div>
+      <div class="empty-card" id="productsEmpty" hidden>لا توجد منتجات مطابقة.</div>
+      <div class="loading-card" id="loadingCard">جاري تحميل المنتجات...</div>
     </section>
-
   </main>
 
-
-
-  <!-- =========================
-       FOOTER
-  ========================== -->
-
-  <footer
-    class="footer"
-    id="footer"
-  >
-
+  <footer class="footer" id="footer">
     <div class="container footer-grid">
-
-
       <div>
-
-        <img
-          src="assets/logo.png"
-          alt="الأمير براند"
-          class="footer-logo"
-        >
-
-        <p>
-          الطلب والتأكيد مباشرة عبر واتساب
-        </p>
-
+        <img src="assets/logo.png" alt="الأمير براند" class="footer-logo">
+        <p>الطلب والتأكيد مباشرة عبر واتساب</p>
       </div>
 
-
       <div>
-
-        <strong>
-          رقم الطلب
-        </strong>
-
-        <a
-          href="https://wa.me/9647733949777"
-          target="_blank"
-          rel="noopener"
-        >
-          0773 394 9777
-        </a>
-
+        <strong>رقم الطلب</strong>
+        <a href="https://wa.me/9647733949777" target="_blank" rel="noopener">0773 394 9777</a>
       </div>
 
-
       <div>
-
-        <strong>
-          التصفح
-        </strong>
-
-        <a href="#offers">
-          العروض
-        </a>
-
-        <a href="#categories">
-          الأقسام
-        </a>
-
+        <strong>التصفح</strong>
+        <a href="#offers">العروض</a>
+        <a href="#categories">الأقسام</a>
       </div>
-
     </div>
 
-
-    <div class="footer-bottom">
-
-      ©
-      <span id="year"></span>
-      الأمير براند
-
-    </div>
-
+    <div class="footer-bottom">© <span id="year"></span> الأمير براند</div>
   </footer>
 
-
-
-  <!-- =========================
-       PRODUCT MODAL
-  ========================== -->
-
-  <dialog
-    class="modal"
-    id="productModal"
-  >
-
-    <button
-      class="modal-close"
-      type="button"
-      data-close-modal="productModal"
-      aria-label="إغلاق"
-    >
-      ×
-    </button>
-
-
-    <div
-      id="productModalContent"
-    >
-    </div>
-
+  <dialog class="modal" id="productModal">
+    <button class="modal-close" type="button" data-close-modal="productModal" aria-label="إغلاق">×</button>
+    <div id="productModalContent"></div>
   </dialog>
 
-
-
-  <!-- =========================
-       CART MODAL
-  ========================== -->
-
-  <dialog
-    class="modal cart-modal"
-    id="cartModal"
-  >
-
+  <dialog class="modal cart-modal" id="cartModal">
     <div class="modal-header">
-
-      <h2>
-        السلة
-      </h2>
-
-      <button
-        class="modal-close static"
-        type="button"
-        data-close-modal="cartModal"
-        aria-label="إغلاق"
-      >
-        ×
-      </button>
-
+      <h2>السلة</h2>
+      <button class="modal-close static" type="button" data-close-modal="cartModal" aria-label="إغلاق">×</button>
     </div>
 
-
-    <div
-      class="cart-items"
-      id="cartItems"
-    >
-    </div>
-
+    <div class="cart-items" id="cartItems"></div>
 
     <div class="cart-summary">
-
-      <div>
-        <span>
-          عدد القطع
-        </span>
-
-        <strong id="cartPieces">
-          0
-        </strong>
-      </div>
-
-
-      <div>
-        <span>
-          الإجمالي
-        </span>
-
-        <strong id="cartTotal">
-          0
-        </strong>
-      </div>
-
+      <div><span>عدد القطع</span><strong id="cartPieces">0</strong></div>
+      <div><span>الإجمالي</span><strong id="cartTotal">0</strong></div>
     </div>
 
-
-    <form
-      id="checkoutForm"
-      class="checkout-form"
-    >
-
-      <input
-        name="name"
-        type="text"
-        placeholder="الاسم"
-        required
-      >
-
-      <input
-        name="phone"
-        type="tel"
-        placeholder="رقم الهاتف"
-        required
-      >
-
-      <textarea
-        name="address"
-        placeholder="العنوان"
-        required
-      ></textarea>
-
-      <input
-        name="landmark"
-        type="text"
-        placeholder="أقرب نقطة دالة"
-      >
-
-      <textarea
-        name="notes"
-        placeholder="ملاحظات الطلب"
-      ></textarea>
-
-
-      <button
-        type="submit"
-        class="checkout-button"
-      >
-        إرسال الطلب عبر واتساب
-      </button>
-
+    <form id="checkoutForm" class="checkout-form">
+      <input name="name" type="text" placeholder="الاسم" required>
+      <input name="phone" type="tel" placeholder="رقم الهاتف" required>
+      <textarea name="address" placeholder="العنوان" required></textarea>
+      <input name="landmark" type="text" placeholder="أقرب نقطة دالة">
+      <textarea name="notes" placeholder="ملاحظات الطلب"></textarea>
+      <button type="submit" class="checkout-button">إرسال الطلب عبر واتساب</button>
     </form>
-
   </dialog>
 
-
-
-  <!-- =========================
-       TOAST
-  ========================== -->
-
-  <div
-    id="toast"
-    class="toast"
-  >
-  </div>
-
-
-
-  <!-- =========================
-       BOTTOM NAV
-  ========================== -->
+  <div id="toast" class="toast"></div>
 
   <nav class="bottom-nav" aria-label="التنقل الرئيسي">
-
-
-    <a
-      href="#home"
-      data-go-home
-      class="bottom-nav-item is-active"
-      aria-label="الرئيسية"
-    >
-      <span class="bottom-nav-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5h-5.8v-6.4H9.3V21H3.5a.5.5 0 0 1-.5-.5z"/></svg>
-      </span>
-
-      <small>
-        الرئيسية
-      </small>
+    <a href="#home" data-go-home class="bottom-nav-item is-active" aria-label="الرئيسية">
+      <span class="bottom-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5h-5.8v-6.4H9.3V21H3.5a.5.5 0 0 1-.5-.5z"/></svg></span>
+      <small>الرئيسية</small>
     </a>
 
-
-    <a
-      href="#categories"
-      data-go-categories
-      class="bottom-nav-item"
-      aria-label="الأقسام"
-    >
-      <span class="bottom-nav-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      </span>
-
-      <small>
-        الأقسام
-      </small>
+    <a href="#categories" data-go-categories class="bottom-nav-item" aria-label="الأقسام">
+      <span class="bottom-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+      <small>الأقسام</small>
     </a>
 
-
-    <a
-      href="#offers"
-      data-filter-offers="true"
-      class="bottom-nav-item"
-      aria-label="العروض"
-    >
-      <span class="bottom-nav-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M20.6 13.1 13.1 20.6a2 2 0 0 1-2.8 0L3.4 13.7a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h7.3a2 2 0 0 1 1.4.6l7.1 6.7a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.4"/><path d="m9 15 6-6M9.2 10.1h.01M14.8 14.9h.01"/></svg>
-      </span>
-
-      <small>
-        العروض
-      </small>
+    <a href="#offers" data-filter-offers="true" class="bottom-nav-item" aria-label="العروض">
+      <span class="bottom-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.6 13.1 13.1 20.6a2 2 0 0 1-2.8 0L3.4 13.7a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h7.3a2 2 0 0 1 1.4.6l7.1 6.7a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.4"/><path d="m9 15 6-6M9.2 10.1h.01M14.8 14.9h.01"/></svg></span>
+      <small>العروض</small>
     </a>
 
-
-    <button
-      type="button"
-      id="bottomCartBtn"
-      class="bottom-nav-item"
-      aria-label="السلة"
-    >
-
-      <span class="bottom-nav-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M3 4h2l1.8 10.2a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
-      </span>
-
-      <small>
-        السلة
-      </small>
-
-      <b
-        id="bottomCartCount"
-      >
-        0
-      </b>
-
+    <button type="button" id="bottomCartBtn" class="bottom-nav-item" aria-label="السلة">
+      <span class="bottom-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l1.8 10.2a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg></span>
+      <small>السلة</small>
+      <b id="bottomCartCount">0</b>
     </button>
-
   </nav>
 
+  <div id="installGuide" class="install-guide" hidden>
+    <div class="install-guide-backdrop" data-install-close></div>
 
+    <div class="install-guide-card">
+      <button type="button" class="install-guide-close" data-install-close aria-label="إغلاق">×</button>
 
-  <!-- =========================
-       SCRIPTS
-  ========================== -->
-
-
-<!-- =========================
-     INSTALL GUIDE
-========================= -->
-
-<div
-  id="installGuide"
-  class="install-guide"
-  hidden
->
-  <div class="install-guide-backdrop" data-install-close></div>
-
-  <div class="install-guide-card">
-    <button
-      type="button"
-      class="install-guide-close"
-      data-install-close
-      aria-label="إغلاق"
-    >×</button>
-
-    <div class="install-guide-top">
-      <img
-        src="assets/logo.png"
-        alt="الأمير براند"
-        class="install-guide-logo"
-      >
-      <div>
-        <h3>ثبّت متجر الأمير براند</h3>
-        <p>أضفه إلى الشاشة الرئيسية للوصول إليه مثل أي تطبيق.</p>
-      </div>
-    </div>
-
-    <div class="install-guide-steps" id="installGuideSteps">
-      <div class="install-step">
-        <span class="install-step-icon">⇧</span>
-        <div><strong>اضغط زر المشاركة</strong><br><small>أسفل Safari</small></div>
+      <div class="install-guide-top">
+        <img src="assets/logo.png" alt="الأمير براند" class="install-guide-logo">
+        <div>
+          <h3>ثبّت متجر الأمير براند</h3>
+          <p>أضفه إلى الشاشة الرئيسية للوصول إليه مثل أي تطبيق.</p>
+        </div>
       </div>
 
-      <div class="install-guide-arrow">↓</div>
+      <div class="install-guide-steps" id="installGuideSteps">
+        <div class="install-step">
+          <span class="install-step-icon">⇧</span>
+          <div><strong>اضغط زر المشاركة</strong><br><small>أسفل Safari</small></div>
+        </div>
 
-      <div class="install-step">
-        <span class="install-step-icon">＋</span>
-        <div><strong>إضافة إلى الشاشة الرئيسية</strong></div>
+        <div class="install-guide-arrow">↓</div>
+
+        <div class="install-step">
+          <span class="install-step-icon">＋</span>
+          <div><strong>إضافة إلى الشاشة الرئيسية</strong></div>
+        </div>
+
+        <div class="install-guide-arrow">↓</div>
+
+        <div class="install-step">
+          <span class="install-step-icon">✓</span>
+          <div><strong>اضغط إضافة</strong><br><small>تم التثبيت</small></div>
+        </div>
       </div>
 
-      <div class="install-guide-arrow">↓</div>
-
-      <div class="install-step">
-        <span class="install-step-icon">✓</span>
-        <div><strong>اضغط إضافة</strong><br><small>تم التثبيت</small></div>
+      <div class="install-guide-actions">
+        <button type="button" class="install-ok-btn" data-install-close>فهمت</button>
       </div>
-    </div>
-
-    <div class="install-guide-actions">
-      <button
-        type="button"
-        class="install-ok-btn"
-        data-install-close
-      >
-        فهمت
-      </button>
     </div>
   </div>
-</div>
 
   <script src="config.js"></script>
   <script src="coupons-sync.js"></script>
   <script src="app.js"></script>
   <script src="progressive-products.js"></script>
-  
+  <script src="theme-toggle.js"></script>
 </body>
-
 </html>
