@@ -1,24 +1,72 @@
 /* Al-Ameer Brand color switch: original <-> pink */
+
+/* menu + theme button stay together inside the top bar */
+.topbar-inner{
+  grid-template-columns:auto 1fr 44px;
+}
+
+.topbar-menu-tools{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:7px;
+  min-width:max-content;
+}
+
 .theme-color-button{
-  position:fixed;
-  left:14px;
-  top:calc(76px + env(safe-area-inset-top));
-  z-index:65;
-  width:44px;
-  height:44px;
+  position:static;
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
   border:1px solid var(--line);
-  border-radius:15px;
-  background:rgba(255,255,255,.94);
+  border-radius:14px;
+  background:#fff;
   color:var(--ink);
   display:grid;
   place-items:center;
   cursor:pointer;
-  box-shadow:0 8px 24px rgba(30,22,14,.12);
-  font-size:21px;
+  padding:0;
+  box-shadow:none;
   -webkit-tap-highlight-color:transparent;
-  transition:transform .18s ease, background .25s ease, border-color .25s ease;
+  touch-action:manipulation;
+  transition:transform .18s ease, background .25s ease, border-color .25s ease, color .25s ease;
 }
+
 .theme-color-button:active{transform:scale(.94)}
+.theme-color-button svg{
+  width:22px;
+  height:22px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+}
+.theme-color-button.is-pink{
+  color:#c95788;
+  background:#fff1f7;
+  border-color:#efbfd3;
+}
+
+/* Keep the store stable on phones and prevent accidental page zoom. */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  touch-action:pan-x pan-y;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+label{
+  touch-action:manipulation;
+}
 
 body.theme-pink{
   --bg:#ffeaf3;
@@ -56,6 +104,11 @@ body.theme-pink .loading-card{
   background:#fff7fa;
   border-color:#f0bfd3;
 }
+body.theme-pink .theme-color-button{
+  background:#f9d9e7;
+  color:#8a365c;
+  border-color:#e99aba;
+}
 body.theme-pink .product-image-wrap{background:#fff2f7}
 body.theme-pink .btn-primary{background:linear-gradient(135deg,#f7afcc,#df6f9f);color:#51263a}
 body.theme-pink .category-card.active{background:linear-gradient(135deg,#7a3453,#b45880);border-color:#e584ae}
@@ -64,5 +117,7 @@ body.theme-pink .bottom-nav{border-color:rgba(223,111,159,.20)}
 body.theme-pink .footer{background:#6f3150}
 
 @media(max-width:680px){
-  .theme-color-button{left:10px;top:calc(72px + env(safe-area-inset-top));width:42px;height:42px;border-radius:14px}
+  .topbar-menu-tools{gap:5px}
+  .theme-color-button{width:40px;height:40px;flex-basis:40px;border-radius:13px}
+  .theme-color-button svg{width:21px;height:21px}
 }
