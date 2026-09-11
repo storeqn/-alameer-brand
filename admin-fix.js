@@ -110,8 +110,36 @@
   function snapshot(){const id=typeof editingId!=='undefined'?String(editingId||'').trim():val('productId');return{id,category:val('category'),sub_category:val('sub_category'),brand:val('brand'),stock:val('stock')}}
   function mergePending(){if(typeof products==='undefined'||!Array.isArray(products))return;pending.forEach((saved,id)=>{const p=products.find(x=>String(x.id||'').trim()===String(id));if(!p)return;if(saved.sub_category)p.sub_category=saved.sub_category;if(saved.category)p.category=saved.category;if(saved.brand)p.brand=saved.brand;if(saved.stock!=='')p.stock=saved.stock})}
 
+  /* إصلاح زر حذف المنتج: إرسال موثوق + إعادة محاولة تلقائية */
+  function installDeleteFix(){
+    const btn=document.getElementById('deleteProductBtn');
+    if(!btn||btn.dataset.deleteFix==='1')return;
+    btn.dataset.deleteFix='1';
+    btn.addEventListener('click',async e=>{
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const id=(typeof editingId!=='undefined'?String(editingId||'').trim():val('productId'));
+      if(!id){alert('تعذر تحديد رقم المنتج. افتح المنتج من جديد ثم حاول الحذف.');return}
+      const name=val('name')||'هذا المنتج';
+      if(!confirm(`هل أنت متأكد من حذف المنتج نهائياً؟\n\n${name}\n\nلا يمكن التراجع عن الحذف.`))return;
+      btn.disabled=true;btn.textContent='جاري حذف المنتج...';
+      const save=document.getElementById('saveBtn');if(save)save.disabled=true;
+      const sendDelete=()=>{const data=new URLSearchParams();data.append('action','delete');data.append('id',id);return fetch(typeof SCRIPT_URL!=='undefined'?SCRIPT_URL:'',{method:'POST',body:data,mode:'no-cors',cache:'no-store'}).catch(err=>{console.warn('Delete request failed',err);return null})};
+      try{
+        await Promise.race([sendDelete(),new Promise(r=>setTimeout(r,1200))]);
+        if(typeof products!=='undefined'&&Array.isArray(products))products=products.filter(p=>String(p.id||'').trim()!==id);
+        pending.delete(id);
+        try{if(typeof resetFormMode==='function')resetFormMode()}catch(_){}
+        try{if(typeof showView==='function')showView('products')}catch(_){}
+        safeRender();
+        const count=document.getElementById('productCount');if(count)count.textContent='✅ تم إرسال طلب حذف المنتج';
+        setTimeout(()=>sendDelete(),1800);
+        setTimeout(async()=>{try{if(typeof refreshProductsSilently==='function')await refreshProductsSilently();const stillThere=typeof products!=='undefined'&&Array.isArray(products)&&products.some(p=>String(p.id||'').trim()===id);if(stillThere){await sendDelete();setTimeout(()=>{try{refreshProductsSilently()}catch(_){}},2200)}}catch(err){console.warn('Delete verification failed',err)}},4200);
+      }catch(err){console.error(err);btn.disabled=false;btn.textContent='🗑️ حذف المنتج نهائياً';if(save)save.disabled=false;alert('تعذر حذف المنتج، حاول مرة أخرى.')}
+    },true);
+  }
+
   window.addEventListener('load',()=>{
-    decorateHeader();decorateForm();injectDashboardControls();patchRendering();
+    decorateHeader();decorateForm();injectDashboardControls();patchRendering();installDeleteFix();
     const form=document.getElementById('productForm'),list=document.getElementById('productsList');
     form?.addEventListener('submit',()=>{const s=snapshot();if(s.id)pending.set(s.id,s);setTimeout(()=>{mergePending();safeRender()},900);setTimeout(()=>{mergePending();safeRender()},2500)},true);
     list?.addEventListener('click',()=>{},true);
