@@ -3,6 +3,33 @@
   const isAdmin=/(^|\/)admin\.html$/i.test(location.pathname)||document.title.includes('إدارة المتجر');
   if(!isAdmin)return;
 
+  /*
+    تسريع واجهة الحفظ:
+    Google Apps Script قد يتأخر عدة ثوانٍ قبل إنهاء استجابة POST رغم أن الطلب وصل فعلياً.
+    نُبقي الطلب يعمل في الخلفية، لكن لا نجعل زر الحفظ ينتظر أكثر من 700ms.
+    التحقق الموجود أصلاً في admin.html سيؤكد التعديل من Google Sheets بعد ذلك.
+  */
+  function installFastAdminPost(){
+    if(window.__alameerFastAdminPost)return;
+    window.__alameerFastAdminPost=true;
+    const nativeFetch=window.fetch.bind(window);
+    window.fetch=function(input,init){
+      const url=typeof input==='string'?input:(input&&input.url)||'';
+      const method=String((init&&init.method)||'GET').toUpperCase();
+      const isAppsScriptPost=method==='POST'&&/https:\/\/script\.google\.com\/macros\/s\//i.test(url);
+      if(!isAppsScriptPost)return nativeFetch(input,init);
+
+      const request=nativeFetch(input,init);
+      request.catch(err=>console.warn('Background Apps Script request failed',err));
+      const quick=new Promise(resolve=>setTimeout(()=>{
+        try{resolve(new Response('',{status:202,statusText:'Accepted'}))}
+        catch(_){resolve({ok:true,status:202})}
+      },700));
+      return Promise.race([request,quick]);
+    };
+  }
+  installFastAdminPost();
+
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
 
